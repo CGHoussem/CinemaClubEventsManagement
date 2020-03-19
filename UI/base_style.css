@@ -1,0 +1,42 @@
+QLabel#titre {
+    font: 28pt "Lucida Calligraphy";
+    color: rgb(255, 44, 47)
+}
+
+QLabel#authentification_label {
+    font: bold
+}
+
+QPushButton {
+    color: #fff;
+    background-color: #007bff;
+    border-style: outset;
+    border-width: 1px;
+    border-radius: 10px;
+    border-color: #007bff;
+    font: bold 12px;
+    padding: 5px;
+}
+
+QPushButton:hover {
+    background-color: #0069d9;
+    border-color: #0062cc
+}
+
+QPushButton#detailsEventBtn {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+
+QPushButton:hover#detailsEventBtn {
+    background-color: #138496;
+    border-color: #117a8b;
+}
+
+QLineEdit {
+    color: #495057;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 2px;
+    padding: 4 1px;
+}

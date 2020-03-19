@@ -7,16 +7,12 @@ La boucle principale de l'application
     Date: 2019-2020
 """
 
-from graphique import *
+from UI.main_window import Ui_MainWindow
+from PyQt5 import *
 
 if __name__ == "__main__":
-    root = Tk()
-    s = ttk.Style(root)
-    s.theme_use('clam')
-
-    app = Application(master=root)
-    app.master.title("Mini Projet")
-    app.master.minsize(600, 400)
-    app.master.maxsize(600, 400)
-
-    app.mainloop()
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    main = Ui_MainWindow()
+    main.show()
+    sys.exit(app.exec_())
