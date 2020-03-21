@@ -8,11 +8,11 @@ La boucle principale de l'application
 """
 
 from UI.main_window import Ui_MainWindow
-from PyQt5 import *
+from PyQt5.QtWidgets import QApplication
 
 if __name__ == "__main__":
     import sys
-    app = QtWidgets.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     main = Ui_MainWindow()
     main.show()
     sys.exit(app.exec_())

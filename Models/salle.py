@@ -1,10 +1,13 @@
 """
-Ce module contient la classe de la salle de projection (SalleProjection)
+Ce module contient la classe de la salle (Salle)
 """
 
-class SalleProjection:
-    def __init__(self, adresse=None, nbrPlaceTotal=None, typeProjection=None, responsable=None):
-        self.adresse = adresse
-        self.nbrPlaceTotal = nbrPlaceTotal
-        self.typeProjection = typeProjection
-        self.reponsable = responsable
+class Salle:
+    def __init__(self, id, adresse, responsable, nbrPlaceTotal):
+        self.__id = id
+        self.__adresse = adresse
+        self.__nbrPlaceTotal = nbrPlaceTotal
+        self.__reponsable = responsable
+
+    def __str__(self):
+        return "Salle %d (%s)" % (self.__id, self.__adresse)

@@ -8,63 +8,44 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint,
+import os
+
+from PyQt5.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint,
     QRect, QSize, QUrl, Qt)
-from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
+from PyQt5.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
     QFontDatabase, QIcon, QLinearGradient, QPalette, QPainter, QPixmap,
     QRadialGradient)
-from PySide2.QtWidgets import *
+from PyQt5.QtWidgets import *
+from Models.utilisateur import Metier, Utilisateur
 
 
-class Ui_add_event_dialog(object):
-    def setupUi(self, add_event_dialog):
-        if add_event_dialog.objectName():
-            add_event_dialog.setObjectName(u"add_event_dialog")
-        add_event_dialog.setWindowModality(Qt.WindowModal)
-        add_event_dialog.resize(500, 461)
-        add_event_dialog.setMinimumSize(QSize(500, 0))
-        add_event_dialog.setStyleSheet(u"QLabel#titre{ \n"
-"	font: 28pt \"Lucida Calligraphy\";\n"
-"	color: rgb(255, 44, 47)\n"
-"}\n"
-"QLabel#authentification_label{\n"
-"	font: bold\n"
-"}\n"
-"QPushButton {\n"
-"	color: #fff;\n"
-"	background-color: #007bff;\n"
-"	border-style: outset;\n"
-"	border-width: 1px;\n"
-"	border-radius: 10px;\n"
-"	border-color: #007bff;\n"
-"	font: bold 12px;\n"
-"	padding: 5px;\n"
-"}\n"
-"QPushButton:hover {\n"
-"	background-color: #0069d9;\n"
-"	border-color: #0062cc\n"
-"}\n"
-"QPushButton#detailsEventBtn {\n"
-"	background-color: #17a2b8;\n"
-"	border-color: #17a2b8;\n"
-"}\n"
-"QPushButton:hover#detailsEventBtn {\n"
-"	background-color: #138496;\n"
-"	border-color: #117a8b;\n"
-"}\n"
-"QLineEdit, QTextEdit, QListWidget, QComboBox {\n"
-"	color: #495057;\n"
-"	background-color: #fff;\n"
-"	border: 1px solid #ced4da;\n"
-"	border-radius: 2px;\n"
-"	padding: 4 1px;\n"
-"}\n"
-"")
-        add_event_dialog.setSizeGripEnabled(True)
-        add_event_dialog.setModal(True)
-        self.verticalLayout = QVBoxLayout(add_event_dialog)
+class Ui_add_animateur_dialog(QDialog):
+    
+    def __init__(self, parent=None, flags=Qt.WindowFlags(), potential_new_animateur=None):
+        super().__init__(parent=parent, flags=flags)
+        self.__potential_new_animateur = None
+        
+        self.__setupUi()
+    
+    @property
+    def potential_new_animateur(self):
+        return self.__potential_new_animateur
+    
+    def __setupUi(self):
+        if self.objectName():
+            self.setObjectName(u"add_event_dialog")
+        self.setWindowModality(Qt.WindowModal)
+        self.resize(500, 461)
+        self.setMinimumSize(QSize(500, 0))
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        f = open(dir_path+"/base_style.css", "r")
+        self.setStyleSheet(f.read())
+        f.close()
+        self.setSizeGripEnabled(True)
+        self.setModal(True)
+        self.verticalLayout = QVBoxLayout(self)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.titre = QLabel(add_event_dialog)
+        self.titre = QLabel(self)
         self.titre.setObjectName(u"titre")
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
@@ -74,7 +55,7 @@ class Ui_add_event_dialog(object):
 
         self.verticalLayout.addWidget(self.titre)
 
-        self.line = QFrame(add_event_dialog)
+        self.line = QFrame(self)
         self.line.setObjectName(u"line")
         sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         sizePolicy1.setHorizontalStretch(0)
@@ -86,7 +67,7 @@ class Ui_add_event_dialog(object):
 
         self.verticalLayout.addWidget(self.line)
 
-        self.scrollArea = QScrollArea(add_event_dialog)
+        self.scrollArea = QScrollArea(self)
         self.scrollArea.setObjectName(u"scrollArea")
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
@@ -96,10 +77,10 @@ class Ui_add_event_dialog(object):
         self.gridLayout_4.setSizeConstraint(QLayout.SetDefaultConstraint)
         self.add_event_layout = QGridLayout()
         self.add_event_layout.setObjectName(u"add_event_layout")
-        self.nom_edit = QLineEdit(self.scrollAreaWidgetContents)
-        self.nom_edit.setObjectName(u"nom_edit")
+        self.email_animateur_edit = QLineEdit(self.scrollAreaWidgetContents)
+        self.email_animateur_edit.setObjectName(u"email_animateur_edit")
 
-        self.add_event_layout.addWidget(self.nom_edit, 2, 1, 1, 2)
+        self.add_event_layout.addWidget(self.email_animateur_edit, 2, 1, 1, 2)
 
         self.prenom_animateur = QLabel(self.scrollAreaWidgetContents)
         self.prenom_animateur.setObjectName(u"prenom_animateur")
@@ -112,11 +93,11 @@ class Ui_add_event_dialog(object):
         self.add_event_layout.addWidget(self.prenom_animateur_edit, 1, 1, 1, 2)
 
         self.metier_animateur_combo = QComboBox(self.scrollAreaWidgetContents)
-        self.metier_animateur_combo.addItem("")
-        self.metier_animateur_combo.addItem("")
-        self.metier_animateur_combo.addItem("")
-        self.metier_animateur_combo.addItem("")
-        self.metier_animateur_combo.addItem("")
+        self.metier_animateur_combo.addItem("Membre du club")
+        self.metier_animateur_combo.addItem("Artiste")
+        self.metier_animateur_combo.addItem("Critique")
+        self.metier_animateur_combo.addItem("Technicien")
+        self.metier_animateur_combo.addItem("Autre..")
         self.metier_animateur_combo.setObjectName(u"metier_animateur_combo")
 
         self.add_event_layout.addWidget(self.metier_animateur_combo, 4, 1, 2, 2)
@@ -158,24 +139,23 @@ class Ui_add_event_dialog(object):
 
         self.verticalLayout.addWidget(self.scrollArea)
 
-        self.buttonBox = QDialogButtonBox(add_event_dialog)
+        self.buttonBox = QDialogButtonBox(self)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Save)
 
         self.verticalLayout.addWidget(self.buttonBox)
 
+        self.__retranslateUi()
+        self.buttonBox.accepted.connect(self.__local_save_animateur)
+        self.buttonBox.rejected.connect(self.reject)
 
-        self.retranslateUi(add_event_dialog)
-        self.buttonBox.accepted.connect(add_event_dialog.accept)
-        self.buttonBox.rejected.connect(add_event_dialog.reject)
-
-        QMetaObject.connectSlotsByName(add_event_dialog)
+        QMetaObject.connectSlotsByName(self)
     # setupUi
 
-    def retranslateUi(self, add_event_dialog):
-        add_event_dialog.setWindowTitle(QCoreApplication.translate("add_event_dialog", u"Ajout d'un \u00e9v\u00e8nement", None))
+    def __retranslateUi(self):
+        self.setWindowTitle(QCoreApplication.translate("add_event_dialog", u"Ajout d'un animateur", None))
         self.titre.setText(QCoreApplication.translate("add_event_dialog", u"Cin\u00e9-Club", None))
-        self.nom_edit.setPlaceholderText(QCoreApplication.translate("add_event_dialog", u"Entrez l'adresse email de l'animateur", None))
+        self.email_animateur_edit.setPlaceholderText(QCoreApplication.translate("add_event_dialog", u"Entrez l'adresse email de l'animateur", None))
         self.prenom_animateur.setText(QCoreApplication.translate("add_event_dialog", u"Pr\u00e9nom", None))
         self.prenom_animateur_edit.setPlaceholderText(QCoreApplication.translate("add_event_dialog", u"Entrez le pr\u00e9nom de l'animateur", None))
         self.metier_animateur_combo.setItemText(0, QCoreApplication.translate("add_event_dialog", u"Membre du club", None))
@@ -192,3 +172,23 @@ class Ui_add_event_dialog(object):
         self.nom_animateur_edit.setPlaceholderText(QCoreApplication.translate("add_event_dialog", u"Entrez le nom de l'animateur", None))
     # retranslateUi
 
+    def __local_save_animateur(self):
+        email = self.email_animateur_edit.text()
+        nom = self.nom_animateur_edit.text()
+        prenom = self.prenom_animateur_edit.text()
+        adresse = self.adresse_animateur_edit.toPlainText()
+        
+        if email == "" or nom == "" or prenom == "" or adresse == "":
+            self.reject()
+        else:
+            metier = Metier.AUTRE
+            if self.metier_animateur_combo.currentText() == "Membre du club":
+                metier = Metier.MEMBRE_CLUB
+            elif self.metier_animateur_combo.currentText() == "Artiste":
+                metier = Metier.ARTISTE
+            elif self.metier_animateur_combo.currentText() == "Critique":
+                metier = Metier.CRITIQUE
+            elif self.metier_animateur_combo.currentText() == "Technicien":
+                metier = Metier.TECHNICIEN
+            self.__potential_new_animateur = Utilisateur(None, email, None, nom, prenom, adresse, metier)
+            self.accept()

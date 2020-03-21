@@ -9,6 +9,7 @@
 ################################################################################
 
 import os
+from DAO.DAOs import EvenementDAO
 
 from PyQt5.QtCore import QCoreApplication, QDate, QMetaObject, QObject, QPoint, QRect, QSize, QUrl, Qt
 from PyQt5.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
@@ -16,18 +17,18 @@ from PyQt5.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
     QRadialGradient)
 from PyQt5.QtWidgets import *
 
-from db import DBConnexion
-from DAO.DAOs import EvenementDAO
+from UI.add_event_dialog import Ui_add_event_dialog
+
 from PIL import Image, ImageOps
 
 class Scheduler(QCalendarWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, events=[]):
         super().__init__(parent)
-        self.evenements = EvenementDAO.get_all_events()
+        self.__events = events
 
     def paintCell(self, painter, rect, date):
         super().paintCell(painter, rect, date)
-        for event in self.evenements:   
+        for event in self.__events:   
             if date == event.date_debut:
                 painter.setBrush(QColor(event.color))
                 painter.drawEllipse(rect.center(), 10, 10)
@@ -36,18 +37,21 @@ class Scheduler(QCalendarWidget):
 class Ui_AdminWindow(QMainWindow):
     def __init__(self, parent=None, flags=Qt.WindowFlags()):
         super().__init__(parent=parent, flags=flags)
-        self.setupUi()
+        self.__all_events = EvenementDAO.get_all()
+        
+        self.__setupUi()
         
         # connect signals
         self.detailsEventBtn.clicked.connect(self.__ouvrir_evenement_dialog)
         self.addEventBtn.clicked.connect(self.__ouvrir_ajout_evenement_dialog)
         self.calendarWidget.currentPageChanged.connect(self.__afficher_evenements)
+        self.eventsListWidget.itemDoubleClicked.connect(self.__ouvrir_evenement_dialog)
         
         year = self.calendarWidget.selectedDate().year()
         month = self.calendarWidget.selectedDate().month()
         self.__afficher_evenements(year, month)
     
-    def setupUi(self):
+    def __setupUi(self):
         if self.objectName():
             self.setObjectName(u"AdminWindow")
         self.resize(530, 569)
@@ -105,7 +109,7 @@ class Ui_AdminWindow(QMainWindow):
 
         self.gridLayout_2.addWidget(self.addEventBtn, 3, 1, 1, 1)
 
-        self.calendarWidget = Scheduler(self.events_tab)
+        self.calendarWidget = Scheduler(self.events_tab, self.__all_events)
         self.calendarWidget.setObjectName(u"calendarWidget")
 
         self.gridLayout_2.addWidget(self.calendarWidget, 0, 0, 1, 2)
@@ -157,15 +161,15 @@ class Ui_AdminWindow(QMainWindow):
         self.statusbar.setObjectName(u"statusbar")
         self.setStatusBar(self.statusbar)
 
-        self.retranslateUi()
+        self.__retranslateUi()
 
         self.tabWidget.setCurrentIndex(0)
 
         QMetaObject.connectSlotsByName(self)       
     # setupUi
 
-    def retranslateUi(self):
-        self.setWindowTitle(QCoreApplication.translate("AdminWindow", u"AdminWindow", None))
+    def __retranslateUi(self):
+        self.setWindowTitle(QCoreApplication.translate("AdminWindow", u"Tableau de bord", None))
         self.titre.setText(QCoreApplication.translate("AdminWindow", u"Cin\u00e9-Club", None))
         self.addEventBtn.setText(QCoreApplication.translate("AdminWindow", u"Ajouter un \u00e9v\u00e8nement", None))
         self.detailsEventBtn.setText(QCoreApplication.translate("AdminWindow", u"Plus d'infos", None))
@@ -174,33 +178,44 @@ class Ui_AdminWindow(QMainWindow):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.history_tab), QCoreApplication.translate("AdminWindow", u"Historique", None))
     # retranslateUi
 
-    def __ouvrir_evenement_dialog(self, *args):
+    # TODO
+    def __ouvrir_evenement_dialog(self):
         """
-        Cette fonction permet d'ouvrir une fenêtre qui permet l'ajout d'un évèenement
-        """
-        print("Ouvrir la dialog d'un évènement", args)
+        Cette fonction permet d'ouvrir une fenêtre qui affiche les détails d'un évènement
+        """    
+        indexes = self.eventsListWidget.selectedIndexes()
+        if len(indexes) > 0:
+            print("Ouvrir la dialog d'un évènement")
+            print(indexes[0].row())
 
     def __ouvrir_ajout_evenement_dialog(self):
         """
         Cette fonction permet d'ouvrir une fenêtre qui permet l'ajout d'un évèenement
-        """
-        print("Ouvrir la dialog d'ajout d'un évènement")
+        """       
+        dialog = Ui_add_event_dialog(self)
+        ret = dialog.exec_()
+        
+        if ret == 1:
+            print("Add ", dialog.potential_new_event)
+        else:
+            print("DO NOTHING!")
 
     def __afficher_evenements(self, year, month):
         """
         Cette fonction permet d'afficher les évènements dans la listview
         """
-        evenements = EvenementDAO.get_all_events()
+        self.__all_events = EvenementDAO.get_all()
         
         self.eventsListWidget.clear()
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        for i, e in enumerate(evenements):
-            icon_name = dir_path+"/events_icons/event%d.png" % i
-            self.__draw_image(icon_name, (10, 10), e.color)
-            icon = QIcon(icon_name)
-            
-            item = QListWidgetItem(icon, str(e))
-            self.eventsListWidget.addItem(item)
+        for i, e in enumerate(self.__all_events):
+            if e.date_debut.year() == year and e.date_debut.month() == month:
+                icon_name = dir_path+"/events_icons/event%d.png" % i
+                self.__draw_image(icon_name, (10, 10), e.color)
+                icon = QIcon(icon_name)
+                
+                item = QListWidgetItem(icon, str(e))
+                self.eventsListWidget.addItem(item)
 
     def __draw_image(self, file_path, dimension, color):
         if isinstance(dimension, tuple):

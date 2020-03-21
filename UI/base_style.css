@@ -33,7 +33,10 @@ QPushButton:hover#detailsEventBtn {
     border-color: #117a8b;
 }
 
-QLineEdit {
+QLineEdit,
+QTextEdit,
+QListWidget,
+QComboBox {
     color: #495057;
     background-color: #fff;
     border: 1px solid #ced4da;

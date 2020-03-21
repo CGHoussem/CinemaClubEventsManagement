@@ -3,7 +3,8 @@ from PyQt5.QtGui import QColor
 
 class Evenement:
         
-    def __init__(self, nom, description, date_debut, date_fin, salle, color, est_projection):
+    def __init__(self, id, nom, description, date_debut, date_fin, salle, color, est_projection):
+        self.__id = id
         self.nom = nom
         self.description = description
         self.date_debut = date_debut
@@ -12,6 +13,10 @@ class Evenement:
         self.salle = salle
         self.color = color
         self.est_projection = est_projection
+
+    @property
+    def id(self):
+        return self.__id
 
     def ajouterMembre(self, membre):
         """
