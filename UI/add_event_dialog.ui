@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>500</width>
-    <height>641</height>
+    <height>635</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -106,9 +106,9 @@ QLineEdit, QTextEdit, QListWidget, QComboBox {
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-314</y>
+        <y>0</y>
         <width>463</width>
-        <height>840</height>
+        <height>872</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_4">
@@ -145,12 +145,18 @@ QLineEdit, QTextEdit, QListWidget, QComboBox {
                <property name="text">
                 <string>Durée de la présentation</string>
                </property>
+               <property name="buddy">
+                <cstring>duree_presentation_edit</cstring>
+               </property>
               </widget>
              </item>
              <item row="0" column="0">
               <widget class="QLabel" name="nom_auteur_label">
                <property name="text">
                 <string>Nom de l'auteur</string>
+               </property>
+               <property name="buddy">
+                <cstring>nom_auteur_edit</cstring>
                </property>
               </widget>
              </item>
@@ -170,13 +176,6 @@ QLineEdit, QTextEdit, QListWidget, QComboBox {
              <bool>false</bool>
             </property>
             <layout class="QGridLayout" name="debat_layout">
-             <item row="4" column="0" alignment="Qt::AlignTop">
-              <widget class="QLabel" name="debat_notes_label">
-               <property name="text">
-                <string>Notes</string>
-               </property>
-              </widget>
-             </item>
              <item row="3" column="1">
               <widget class="QLineEdit" name="duree_debat_edit">
                <property name="placeholderText">
@@ -196,12 +195,18 @@ QLineEdit, QTextEdit, QListWidget, QComboBox {
                <property name="text">
                 <string>Animateur</string>
                </property>
+               <property name="buddy">
+                <cstring>animateur_list</cstring>
+               </property>
               </widget>
              </item>
-             <item row="4" column="1">
-              <widget class="QTextEdit" name="debat_notes__edit">
-               <property name="placeholderText">
-                <string>Entrez quelques notes sur le débat</string>
+             <item row="4" column="0" alignment="Qt::AlignTop">
+              <widget class="QLabel" name="debat_notes_label">
+               <property name="text">
+                <string>Notes</string>
+               </property>
+               <property name="buddy">
+                <cstring>debat_notes__edit</cstring>
                </property>
               </widget>
              </item>
@@ -210,12 +215,22 @@ QLineEdit, QTextEdit, QListWidget, QComboBox {
                <property name="text">
                 <string>Durée</string>
                </property>
+               <property name="buddy">
+                <cstring>duree_debat_edit</cstring>
+               </property>
               </widget>
              </item>
              <item row="2" column="1">
               <widget class="QPushButton" name="ajout_animateur_btn">
                <property name="text">
                 <string>Ajouter un animateur</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QTextEdit" name="debat_notes__edit">
+               <property name="placeholderText">
+                <string>Entrez quelques notes sur le débat</string>
                </property>
               </widget>
              </item>
@@ -241,6 +256,9 @@ QLineEdit, QTextEdit, QListWidget, QComboBox {
             <property name="text">
              <string>Contexte du tournage</string>
             </property>
+            <property name="buddy">
+             <cstring>context_tournage_edit</cstring>
+            </property>
            </widget>
           </item>
           <item row="6" column="0">
@@ -255,17 +273,53 @@ QLineEdit, QTextEdit, QListWidget, QComboBox {
        </item>
        <item row="0" column="0">
         <layout class="QGridLayout" name="add_event_layout">
-         <item row="0" column="0" alignment="Qt::AlignTop">
-          <widget class="QLabel" name="responsables_label">
-           <property name="text">
-            <string>Reponsables</string>
+         <item row="6" column="1" colspan="2">
+          <widget class="QComboBox" name="salle_projection_combo"/>
+         </item>
+         <item row="2" column="1" colspan="2">
+          <widget class="QLineEdit" name="nom_edit">
+           <property name="placeholderText">
+            <string>Entrez le nom de l'évènement</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="2" alignment="Qt::AlignBottom">
-          <widget class="QPushButton" name="enlever_repsonsable_btn">
+         <item row="8" column="0">
+          <widget class="QCheckBox" name="est_projection_checkbox">
            <property name="text">
-            <string>Enlever</string>
+            <string>Est Projection?</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1" colspan="2">
+          <widget class="QTextEdit" name="description_edit">
+           <property name="placeholderText">
+            <string>Entrez la description de l'évènement</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="salle_projection_label">
+           <property name="text">
+            <string>Salle de projection</string>
+           </property>
+           <property name="buddy">
+            <cstring>salle_projection_combo</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1">
+          <widget class="QPushButton" name="event_color_btn">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;La couleur de l'évènement sur la calendrier&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Choisir une couleur</string>
            </property>
           </widget>
          </item>
@@ -273,6 +327,9 @@ QLineEdit, QTextEdit, QListWidget, QComboBox {
           <widget class="QLabel" name="nom_evenement_label">
            <property name="text">
             <string>Nom de l'évènement</string>
+           </property>
+           <property name="buddy">
+            <cstring>nom_edit</cstring>
            </property>
           </widget>
          </item>
@@ -283,13 +340,47 @@ QLineEdit, QTextEdit, QListWidget, QComboBox {
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QComboBox" name="responsable_combo"/>
-         </item>
          <item row="5" column="0">
           <widget class="QLabel" name="date_fin_label">
            <property name="text">
             <string>Date de fin</string>
+           </property>
+           <property name="buddy">
+            <cstring>date_fin_edit</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="event_color_label">
+           <property name="text">
+            <string>Couleur</string>
+           </property>
+           <property name="buddy">
+            <cstring>event_color_btn</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2" alignment="Qt::AlignBottom">
+          <widget class="QPushButton" name="enlever_repsonsable_btn">
+           <property name="text">
+            <string>Enlever</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1" colspan="2">
+          <widget class="QDateTimeEdit" name="date_debut_edit">
+           <property name="calendarPopup">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0" alignment="Qt::AlignTop">
+          <widget class="QLabel" name="description_label">
+           <property name="text">
+            <string>Description</string>
+           </property>
+           <property name="buddy">
+            <cstring>description_edit</cstring>
            </property>
           </widget>
          </item>
@@ -301,42 +392,13 @@ QLineEdit, QTextEdit, QListWidget, QComboBox {
            <property name="text">
             <string>Date de début</string>
            </property>
-          </widget>
-         </item>
-         <item row="3" column="0" alignment="Qt::AlignTop">
-          <widget class="QLabel" name="description_label">
-           <property name="text">
-            <string>Description</string>
+           <property name="buddy">
+            <cstring>date_debut_edit</cstring>
            </property>
           </widget>
          </item>
-         <item row="6" column="0">
-          <widget class="QLabel" name="salle_projection_label">
-           <property name="text">
-            <string>Salle de projection</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1" colspan="2">
-          <widget class="QLineEdit" name="nom_edit">
-           <property name="placeholderText">
-            <string>Entrez le nom de l'évènement</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1" colspan="2">
-          <widget class="QTextEdit" name="description_edit">
-           <property name="placeholderText">
-            <string>Entrez la description de l'évènement</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1" colspan="2">
-          <widget class="QDateTimeEdit" name="date_debut_edit">
-           <property name="calendarPopup">
-            <bool>true</bool>
-           </property>
-          </widget>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="responsable_combo"/>
          </item>
          <item row="5" column="1" colspan="2">
           <widget class="QDateTimeEdit" name="date_fin_edit">
@@ -345,13 +407,13 @@ QLineEdit, QTextEdit, QListWidget, QComboBox {
            </property>
           </widget>
          </item>
-         <item row="6" column="1" colspan="2">
-          <widget class="QComboBox" name="salle_projection_combo"/>
-         </item>
-         <item row="8" column="0">
-          <widget class="QCheckBox" name="est_projection_checkbox">
+         <item row="0" column="0" alignment="Qt::AlignTop">
+          <widget class="QLabel" name="responsables_label">
            <property name="text">
-            <string>Est Projection?</string>
+            <string>Reponsables</string>
+           </property>
+           <property name="buddy">
+            <cstring>responsable_list</cstring>
            </property>
           </widget>
          </item>
@@ -370,6 +432,28 @@ QLineEdit, QTextEdit, QListWidget, QComboBox {
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>responsable_list</tabstop>
+  <tabstop>enlever_repsonsable_btn</tabstop>
+  <tabstop>responsable_combo</tabstop>
+  <tabstop>ajouter_responsable_btn</tabstop>
+  <tabstop>nom_edit</tabstop>
+  <tabstop>description_edit</tabstop>
+  <tabstop>date_debut_edit</tabstop>
+  <tabstop>date_fin_edit</tabstop>
+  <tabstop>salle_projection_combo</tabstop>
+  <tabstop>est_projection_checkbox</tabstop>
+  <tabstop>context_tournage_edit</tabstop>
+  <tabstop>presentation_checkbox</tabstop>
+  <tabstop>nom_auteur_edit</tabstop>
+  <tabstop>duree_presentation_edit</tabstop>
+  <tabstop>debat_checkbox</tabstop>
+  <tabstop>animateur_list</tabstop>
+  <tabstop>ajout_animateur_btn</tabstop>
+  <tabstop>duree_debat_edit</tabstop>
+  <tabstop>debat_notes__edit</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
@@ -379,8 +463,8 @@ QLineEdit, QTextEdit, QListWidget, QComboBox {
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>257</x>
+     <y>625</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -395,8 +479,8 @@ QLineEdit, QTextEdit, QListWidget, QComboBox {
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>325</x>
+     <y>625</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

@@ -9,5 +9,9 @@ class Salle:
         self.__nbrPlaceTotal = nbrPlaceTotal
         self.__reponsable = responsable
 
+    @property
+    def id(self):
+        return self.__id
+
     def __str__(self):
         return "Salle %d (%s)" % (self.__id, self.__adresse)

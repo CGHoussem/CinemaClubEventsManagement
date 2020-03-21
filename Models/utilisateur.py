@@ -37,6 +37,14 @@ class Utilisateur:
         return self.__id
 
     @property
+    def email(self):
+        return self.__email
+
+    @property
+    def adresse(self):
+        return self.__adresse
+
+    @property
     def metier(self):
         return self.__metier
     

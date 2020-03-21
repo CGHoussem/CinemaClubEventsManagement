@@ -11,8 +11,13 @@
 import os
 from DAO.DAOs import UtilisateurDAO, SalleDAO
 from Models.utilisateur import Metier
+from Models.presentation import PresentationAuteur
+from Models.projection import Projection
+from Models.debat import Debat
+from Models.salle import Salle
+from Models.evenement import Evenement
 
-from PyQt5.QtCore import QCoreApplication, QDateTime, QMetaObject, QObject, QPoint, QRect, QSize, QUrl, Qt
+from PyQt5.QtCore import QCoreApplication, QDateTime, QMetaObject, QObject, QPoint, QRect, QSize, QUrl, Qt, pyqtSlot
 from PyQt5.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
     QFontDatabase, QIcon, QLinearGradient, QPalette, QPainter, QPixmap,
     QRadialGradient)
@@ -21,14 +26,14 @@ from PyQt5.QtWidgets import *
 from UI.add_animateur_dialog import Ui_add_animateur_dialog
 
 class Ui_add_event_dialog(QDialog):
-    
     def __init__(self, parent=None, flags=Qt.WindowFlags()):
         super().__init__(parent=parent, flags=flags)
         self.__potential_new_event = None
+        self.__event_color = None
         self.__list_potential_responsables = []
         self.__list_responsables = []
         self.__list_salles = SalleDAO.get_all()
-        self.__list_animateurs = []
+        self.__animateur = None
         
         self.__setupUi()
         
@@ -40,6 +45,7 @@ class Ui_add_event_dialog(QDialog):
         # buttons
         self.enlever_repsonsable_btn.clicked.connect(self.__delete_responsable)
         self.ajouter_responsable_btn.clicked.connect(self.__add_responsable)
+        self.event_color_btn.clicked.connect(self.__choose_color)
         self.ajout_animateur_btn.clicked.connect(self.__add_animateur)
         
         # initilazing members
@@ -100,7 +106,7 @@ class Ui_add_event_dialog(QDialog):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, -314, 463, 840))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 463, 872))
         self.gridLayout_4 = QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_4.setObjectName(u"gridLayout_4")
         self.projection_groupbox = QGroupBox(self.scrollAreaWidgetContents)
@@ -210,65 +216,25 @@ class Ui_add_event_dialog(QDialog):
 
         self.add_event_layout = QGridLayout()
         self.add_event_layout.setObjectName(u"add_event_layout")
-        self.responsables_label = QLabel(self.scrollAreaWidgetContents)
-        self.responsables_label.setObjectName(u"responsables_label")
+        self.responsable_combo = QComboBox(self.scrollAreaWidgetContents)
+        self.responsable_combo.setObjectName(u"responsable_combo")
 
-        self.add_event_layout.addWidget(self.responsables_label, 0, 0, 1, 1, Qt.AlignTop)
+        self.add_event_layout.addWidget(self.responsable_combo, 1, 1, 1, 1)
 
-        self.enlever_repsonsable_btn = QPushButton(self.scrollAreaWidgetContents)
-        self.enlever_repsonsable_btn.setObjectName(u"enlever_repsonsable_btn")
+        self.description_evenement_edit = QTextEdit(self.scrollAreaWidgetContents)
+        self.description_evenement_edit.setObjectName(u"description_evenement_edit")
 
-        self.add_event_layout.addWidget(self.enlever_repsonsable_btn, 0, 2, 1, 1, Qt.AlignBottom)
-
-        self.nom_evenement_label = QLabel(self.scrollAreaWidgetContents)
-        self.nom_evenement_label.setObjectName(u"nom_evenement_label")
-
-        self.add_event_layout.addWidget(self.nom_evenement_label, 2, 0, 1, 1)
+        self.add_event_layout.addWidget(self.description_evenement_edit, 3, 1, 1, 2)
 
         self.ajouter_responsable_btn = QPushButton(self.scrollAreaWidgetContents)
         self.ajouter_responsable_btn.setObjectName(u"ajouter_responsable_btn")
 
         self.add_event_layout.addWidget(self.ajouter_responsable_btn, 1, 2, 1, 1)
 
-        self.responsable_combo = QComboBox(self.scrollAreaWidgetContents)
-        self.responsable_combo.setObjectName(u"responsable_combo")
-
-        self.add_event_layout.addWidget(self.responsable_combo, 1, 1, 1, 1)
-
         self.date_fin_label = QLabel(self.scrollAreaWidgetContents)
         self.date_fin_label.setObjectName(u"date_fin_label")
 
         self.add_event_layout.addWidget(self.date_fin_label, 5, 0, 1, 1)
-
-        self.responsable_list = QListWidget(self.scrollAreaWidgetContents)
-        self.responsable_list.setObjectName(u"responsable_list")
-
-        self.add_event_layout.addWidget(self.responsable_list, 0, 1, 1, 1)
-
-        self.date_debut_label = QLabel(self.scrollAreaWidgetContents)
-        self.date_debut_label.setObjectName(u"date_debut_label")
-
-        self.add_event_layout.addWidget(self.date_debut_label, 4, 0, 1, 1)
-
-        self.description_label = QLabel(self.scrollAreaWidgetContents)
-        self.description_label.setObjectName(u"description_label")
-
-        self.add_event_layout.addWidget(self.description_label, 3, 0, 1, 1, Qt.AlignTop)
-
-        self.salle_projection_label = QLabel(self.scrollAreaWidgetContents)
-        self.salle_projection_label.setObjectName(u"salle_projection_label")
-
-        self.add_event_layout.addWidget(self.salle_projection_label, 6, 0, 1, 1)
-
-        self.nom_edit = QLineEdit(self.scrollAreaWidgetContents)
-        self.nom_edit.setObjectName(u"nom_edit")
-
-        self.add_event_layout.addWidget(self.nom_edit, 2, 1, 1, 2)
-
-        self.description_edit = QTextEdit(self.scrollAreaWidgetContents)
-        self.description_edit.setObjectName(u"description_edit")
-
-        self.add_event_layout.addWidget(self.description_edit, 3, 1, 1, 2)
 
         self.date_debut_edit = QDateTimeEdit(self.scrollAreaWidgetContents)
         self.date_debut_edit.setObjectName(u"date_debut_edit")
@@ -276,21 +242,76 @@ class Ui_add_event_dialog(QDialog):
 
         self.add_event_layout.addWidget(self.date_debut_edit, 4, 1, 1, 2)
 
+        self.event_color_label = QLabel(self.scrollAreaWidgetContents)
+        self.event_color_label.setObjectName(u"event_color_label")
+
+        self.add_event_layout.addWidget(self.event_color_label, 7, 0, 1, 1)
+
         self.date_fin_edit = QDateTimeEdit(self.scrollAreaWidgetContents)
         self.date_fin_edit.setObjectName(u"date_fin_edit")
         self.date_fin_edit.setCalendarPopup(True)
 
         self.add_event_layout.addWidget(self.date_fin_edit, 5, 1, 1, 2)
 
-        self.salle_projection_combo = QComboBox(self.scrollAreaWidgetContents)
-        self.salle_projection_combo.setObjectName(u"salle_projection_combo")
+        self.salle_projection_label = QLabel(self.scrollAreaWidgetContents)
+        self.salle_projection_label.setObjectName(u"salle_projection_label")
 
-        self.add_event_layout.addWidget(self.salle_projection_combo, 6, 1, 1, 2)
+        self.add_event_layout.addWidget(self.salle_projection_label, 6, 0, 1, 1)
+
+        self.nom_evenement_edit = QLineEdit(self.scrollAreaWidgetContents)
+        self.nom_evenement_edit.setObjectName(u"nom_evenement_edit")
+
+        self.add_event_layout.addWidget(self.nom_evenement_edit, 2, 1, 1, 2)
+
+        self.responsable_list = QListWidget(self.scrollAreaWidgetContents)
+        self.responsable_list.setObjectName(u"responsable_list")
+
+        self.add_event_layout.addWidget(self.responsable_list, 0, 1, 1, 1)
 
         self.est_projection_checkbox = QCheckBox(self.scrollAreaWidgetContents)
         self.est_projection_checkbox.setObjectName(u"est_projection_checkbox")
 
         self.add_event_layout.addWidget(self.est_projection_checkbox, 8, 0, 1, 1)
+
+        self.description_label = QLabel(self.scrollAreaWidgetContents)
+        self.description_label.setObjectName(u"description_label")
+
+        self.add_event_layout.addWidget(self.description_label, 3, 0, 1, 1, Qt.AlignTop)
+
+        self.responsables_label = QLabel(self.scrollAreaWidgetContents)
+        self.responsables_label.setObjectName(u"responsables_label")
+
+        self.add_event_layout.addWidget(self.responsables_label, 0, 0, 1, 1, Qt.AlignTop)
+
+        self.nom_evenement_label = QLabel(self.scrollAreaWidgetContents)
+        self.nom_evenement_label.setObjectName(u"nom_evenement_label")
+
+        self.add_event_layout.addWidget(self.nom_evenement_label, 2, 0, 1, 1)
+
+        self.salle_projection_combo = QComboBox(self.scrollAreaWidgetContents)
+        self.salle_projection_combo.setObjectName(u"salle_projection_combo")
+
+        self.add_event_layout.addWidget(self.salle_projection_combo, 6, 1, 1, 2)
+
+        self.enlever_repsonsable_btn = QPushButton(self.scrollAreaWidgetContents)
+        self.enlever_repsonsable_btn.setObjectName(u"enlever_repsonsable_btn")
+
+        self.add_event_layout.addWidget(self.enlever_repsonsable_btn, 0, 2, 1, 1, Qt.AlignBottom)
+
+        self.date_debut_label = QLabel(self.scrollAreaWidgetContents)
+        self.date_debut_label.setObjectName(u"date_debut_label")
+
+        self.add_event_layout.addWidget(self.date_debut_label, 4, 0, 1, 1)
+
+        self.event_color_btn = QPushButton(self.scrollAreaWidgetContents)
+        self.event_color_btn.setObjectName(u"event_color_btn")
+        sizePolicy3 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.event_color_btn.sizePolicy().hasHeightForWidth())
+        self.event_color_btn.setSizePolicy(sizePolicy3)
+
+        self.add_event_layout.addWidget(self.event_color_btn, 7, 1, 1, 2)
 
 
         self.gridLayout_4.addLayout(self.add_event_layout, 0, 0, 1, 1)
@@ -305,9 +326,44 @@ class Ui_add_event_dialog(QDialog):
 
         self.verticalLayout.addWidget(self.buttonBox)
 
+        #if QT_CONFIG(shortcut)
+        self.duree_presentation_label.setBuddy(self.duree_presentation_edit)
+        self.nom_auteur_label.setBuddy(self.nom_auteur_edit)
+        self.debat_notes_label.setBuddy(self.debat_notes__edit)
+        self.debat_animateur_label.setBuddy(self.animateur_list)
+        self.debat_duree_label.setBuddy(self.duree_debat_edit)
+        self.contexte_label.setBuddy(self.context_tournage_edit)
+        self.date_fin_label.setBuddy(self.date_fin_edit)
+        self.event_color_label.setBuddy(self.event_color_btn)
+        self.salle_projection_label.setBuddy(self.salle_projection_combo)
+        self.description_label.setBuddy(self.description_evenement_edit)
+        self.responsables_label.setBuddy(self.responsable_list)
+        self.nom_evenement_label.setBuddy(self.nom_evenement_edit)
+        self.date_debut_label.setBuddy(self.date_debut_edit)
+        #endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.scrollArea, self.responsable_list)
+        QWidget.setTabOrder(self.responsable_list, self.enlever_repsonsable_btn)
+        QWidget.setTabOrder(self.enlever_repsonsable_btn, self.responsable_combo)
+        QWidget.setTabOrder(self.responsable_combo, self.ajouter_responsable_btn)
+        QWidget.setTabOrder(self.ajouter_responsable_btn, self.nom_evenement_edit)
+        QWidget.setTabOrder(self.nom_evenement_edit, self.description_evenement_edit)
+        QWidget.setTabOrder(self.description_evenement_edit, self.date_debut_edit)
+        QWidget.setTabOrder(self.date_debut_edit, self.date_fin_edit)
+        QWidget.setTabOrder(self.date_fin_edit, self.salle_projection_combo)
+        QWidget.setTabOrder(self.salle_projection_combo, self.event_color_btn)
+        QWidget.setTabOrder(self.event_color_btn, self.est_projection_checkbox)
+        QWidget.setTabOrder(self.est_projection_checkbox, self.context_tournage_edit)
+        QWidget.setTabOrder(self.context_tournage_edit, self.presentation_checkbox)
+        QWidget.setTabOrder(self.presentation_checkbox, self.nom_auteur_edit)
+        QWidget.setTabOrder(self.nom_auteur_edit, self.duree_presentation_edit)
+        QWidget.setTabOrder(self.duree_presentation_edit, self.debat_checkbox)
+        QWidget.setTabOrder(self.debat_checkbox, self.animateur_list)
+        QWidget.setTabOrder(self.animateur_list, self.ajout_animateur_btn)
+        QWidget.setTabOrder(self.ajout_animateur_btn, self.duree_debat_edit)
+        QWidget.setTabOrder(self.duree_debat_edit, self.debat_notes__edit)
 
         self.__retranslateUi()
-        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.accepted.connect(self.__local_save_event)
         self.buttonBox.rejected.connect(self.reject)
 
         QMetaObject.connectSlotsByName(self)
@@ -323,8 +379,8 @@ class Ui_add_event_dialog(QDialog):
         self.date_debut_label.setText(QCoreApplication.translate("AddEventDialog", u"Date de d\u00e9but", None))
         self.description_label.setText(QCoreApplication.translate("AddEventDialog", u"Description", None))
         self.responsables_label.setText(QCoreApplication.translate("AddEventDialog", u"Reponsables", None))
-        self.nom_edit.setPlaceholderText(QCoreApplication.translate("AddEventDialog", u"Entrez le nom de l'\u00e9v\u00e8nement", None))
-        self.description_edit.setPlaceholderText(QCoreApplication.translate("AddEventDialog", u"Entrez la description de l'\u00e9v\u00e8nement", None))
+        self.nom_evenement_edit.setPlaceholderText(QCoreApplication.translate("AddEventDialog", u"Entrez le nom de l'\u00e9v\u00e8nement", None))
+        self.description_evenement_edit.setPlaceholderText(QCoreApplication.translate("AddEventDialog", u"Entrez la description de l'\u00e9v\u00e8nement", None))
         self.date_fin_label.setText(QCoreApplication.translate("AddEventDialog", u"Date de fin", None))
         self.context_tournage_edit.setPlaceholderText(QCoreApplication.translate("AddEventDialog", u"Entrez le contexte du trounage", None))
         self.presentation_checkbox.setText(QCoreApplication.translate("AddEventDialog", u"Pr\u00e9sentation de l'auteur?", None))
@@ -341,8 +397,14 @@ class Ui_add_event_dialog(QDialog):
         self.duree_presentation_label.setText(QCoreApplication.translate("AddEventDialog", u"Dur\u00e9e de la pr\u00e9sentation", None))
         self.nom_auteur_label.setText(QCoreApplication.translate("AddEventDialog", u"Nom de l'auteur", None))
         self.salle_projection_label.setText(QCoreApplication.translate("add_event_dialog", u"Salle de projection", None))
+        self.event_color_label.setText(QCoreApplication.translate("add_event_dialog", u"Couleur", None))
+        #if QT_CONFIG(tooltip)
+        self.event_color_btn.setToolTip(QCoreApplication.translate("add_event_dialog", u"<html><head/><body><p>La couleur de l'\u00e9v\u00e8nement sur la calendrier</p></body></html>", None))
+        #endif // QT_CONFIG(tooltip)
+        self.event_color_btn.setText(QCoreApplication.translate("add_event_dialog", u"Choisir une couleur", None))
     # retranslateUi
 
+    @pyqtSlot()
     def __delete_responsable(self):
         selected_indexes = []
         for selected_item in  self.responsable_list.selectedIndexes():
@@ -352,6 +414,7 @@ class Ui_add_event_dialog(QDialog):
             self.__list_responsables.pop(index)
             self.responsable_list.takeItem(index)
 
+    @pyqtSlot()
     def __add_responsable(self):
         index = self.responsable_combo.currentIndex()
         responsable = self.__list_potential_responsables[index]
@@ -360,29 +423,97 @@ class Ui_add_event_dialog(QDialog):
             self.__list_responsables.append(responsable)
             self.responsable_list.addItem(str(responsable))
     
+    @pyqtSlot()
     def __add_animateur(self):
         potential_new_animateur = None
         dialog = Ui_add_animateur_dialog(self)
         ret = dialog.exec_()
         
         if ret == 1:
-            if not self.__in_list_animateurs(dialog.potential_new_animateur):
+            if self.__animateur != None or (not self.__animateur.nom+self.____animateur.prenom == dialog.potential_new_animateur.nom+dialog.potential_new_animateur.prenom):
                 print("Add", dialog.potential_new_animateur)
-                self.__list_animateurs.append(dialog.potential_new_animateur)
-                self.animateur_list.addItem(str(dialog.potential_new_animateur))
+                self.__animateur = dialog.potential_new_animateur
+                self.animateur_list.addItem(str(self.__animateur))
             else:
                 print("DO NOTHING", ret)
         else:
             print("DO NOTHING", ret)
     
-    def __in_list_animateurs(self, new_animateur):
-        for a in self.__list_animateurs:
-            if a.nom+a.prenom == new_animateur.nom+new_animateur.prenom:
-                return True
-        return False
-    
-    # TODO
-    def __local_save_event(self):
+    @pyqtSlot()
+    def __choose_color(self):
+        dialog = QColorDialog(self) 
         
+        if dialog.exec_() == 1:    
+            color = dialog.currentColor()
+            if color.isValid():
+                p = QPalette()
+                p.setColor(p.Foreground, color)
+                self.event_color_label.setPalette(p)
+                self.__event_color = color
+    
+    # TODO save event
+    def __local_save_event(self):
+        nom = self.nom_evenement_edit.text()
+        description = self.description_evenement_edit.toPlainText()
+        date_debut = self.date_debut_edit.dateTime()
+        date_fin = self.date_fin_edit.dateTime()
+        
+        salle = self.__list_salles[self.salle_projection_combo.currentIndex()]
+        color = self.__event_color
+        
+        est_projection = self.est_projection_checkbox.isChecked()
+        if est_projection:
+            presentation = None
+            debat = None
+            contexte = self.context_tournage_edit.toPlainText()
+            existe_presentation = self.presentation_checkbox.isChecked()
+            existe_debat = self.debat_checkbox.isChecked()
+            if existe_presentation:
+                auteur = self.nom_auteur_edit.text()
+                duree_presentation = self.duree_presentation_edit.text()
+                if len(auteur) != 0 and len(duree_presentation) != 0:
+                    presentation = PresentationAuteur(auteur, duree_presentation)
+                else:
+                    # error presentation
+                    QMessageBox.warning(self, "Informations manquantes!", "Il faut saisir toutes les informations de la présentation.")
+                    return
+            if existe_debat:
+                duree_debat = self.duree_debat_edit.text()
+                notes = self.debat_notes__edit.text()
+                if self.__animateur != None:
+                    debat = Debat(None, self.__animateur, duree_debat, notes)
+                else:
+                    # error debat
+                    QMessageBox.warning(self, "Informations manquantes!", "Vous devrez assigner un animateur.")
+                    return
+            
+            if len(nom) != 0 and len(description) != 0 and len(contexte) != 0 and date_debut < date_fin and color != None and salle != None:
+                projection = Projection(None, nom, description, date_debut, date_fin, salle, color, contexte, presentation, debat)
+                if len(self.__list_responsables) != 0:
+                    for r in self.__list_responsables:
+                        projection.ajouterResponsable(r)
+                    self.__potential_new_event = projection
+                else:
+                    # error projection (aucun responsable)
+                    QMessageBox.warning(self, "Informations manquantes!", "Vous devez ajouter, au moins, un responsable.")
+                    return
+            else:
+                # error projection (autres)
+                QMessageBox.warning(self, "Informations manquantes!", "Vérifier les informations générale de l'évènement!")
+                return
+        else:
+            if len(nom) != 0 and len(description) != 0  and date_debut < date_fin and color != None and salle != None:
+                evenement = Evenement(None, nom, description, date_debut, date_fin, salle, color)
+                if len(self.__list_responsables) != 0:
+                    for r in self.__list_responsables:
+                        evenement.ajouterResponsable(r)
+                    self.__potential_new_event = evenement
+                else:
+                    # error projection (aucun responsable)
+                    QMessageBox.warning(self, "Informations manquantes!", "Vous devez ajouter, au moins, un responsable.")
+                    return
+            else:
+                # error projection (autres)
+                QMessageBox.warning(self, "Informations manquantes!", "Vérifier les informations générale de l'évènement!")
+                return
         self.accept()
-        pass

@@ -26,10 +26,13 @@ class Scheduler(QCalendarWidget):
         super().__init__(parent)
         self.__events = events
 
+    def update_events(self, new_events):
+        self.__all_events = new_events
+
     def paintCell(self, painter, rect, date):
         super().paintCell(painter, rect, date)
         for event in self.__events:   
-            if date == event.date_debut:
+            if date == event.date_debut.date():
                 painter.setBrush(QColor(event.color))
                 painter.drawEllipse(rect.center(), 10, 10)
                 painter.drawText(rect, Qt.AlignCenter, str(date.day()))
@@ -190,15 +193,22 @@ class Ui_AdminWindow(QMainWindow):
 
     def __ouvrir_ajout_evenement_dialog(self):
         """
-        Cette fonction permet d'ouvrir une fenêtre qui permet l'ajout d'un évèenement
+        Cette fonction permet d'ouvrir une fenêtre qui permet l'ajout d'un évènement
         """       
         dialog = Ui_add_event_dialog(self)
         ret = dialog.exec_()
         
         if ret == 1:
-            print("Add ", dialog.potential_new_event)
+            if dialog.potential_new_event != None:
+                print("Add ", str(dialog.potential_new_event))
+                EvenementDAO.add_event(dialog.potential_new_event)
+                self.__all_events.append(dialog.potential_new_event)
+                self.calendarWidget.update_events(self.__all_events)
+                self.calendarWidget.updateCells()
+            else:
+                print("DO NOTHING!", ret)
         else:
-            print("DO NOTHING!")
+            print("DO NOTHING!", ret)
 
     def __afficher_evenements(self, year, month):
         """
@@ -209,7 +219,7 @@ class Ui_AdminWindow(QMainWindow):
         self.eventsListWidget.clear()
         dir_path = os.path.dirname(os.path.realpath(__file__))
         for i, e in enumerate(self.__all_events):
-            if e.date_debut.year() == year and e.date_debut.month() == month:
+            if e.date_debut.date().year() == year and e.date_debut.date().month() == month:
                 icon_name = dir_path+"/events_icons/event%d.png" % i
                 self.__draw_image(icon_name, (10, 10), e.color)
                 icon = QIcon(icon_name)
