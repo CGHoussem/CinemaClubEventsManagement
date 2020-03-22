@@ -11,7 +11,7 @@
 import os
 from DAO.DAOs import EvenementDAO
 
-from PyQt5.QtCore import QCoreApplication, QDate, QMetaObject, QObject, QPoint, QRect, QSize, QUrl, Qt
+from PyQt5.QtCore import QCoreApplication, QDate, QMetaObject, QObject, QPoint, QRect, QSize, QUrl, Qt, pyqtSlot
 from PyQt5.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
     QFontDatabase, QIcon, QLinearGradient, QPalette, QPainter, QPixmap,
     QRadialGradient)
@@ -40,31 +40,122 @@ class Scheduler(QCalendarWidget):
 class Ui_AdminWindow(QMainWindow):
     def __init__(self, parent=None, flags=Qt.WindowFlags()):
         super().__init__(parent=parent, flags=flags)
-        self.__all_events = EvenementDAO.get_all()
         
+        # Initializing variables
+        self.__all_events = EvenementDAO.get_all()
         self.__setupUi()
         
-        # connect signals
-        self.detailsEventBtn.clicked.connect(self.__ouvrir_evenement_dialog)
-        self.addEventBtn.clicked.connect(self.__ouvrir_ajout_evenement_dialog)
-        self.calendarWidget.currentPageChanged.connect(self.__afficher_evenements)
-        self.eventsListWidget.itemDoubleClicked.connect(self.__ouvrir_evenement_dialog)
+        # Initialiazing members
+        self.filtre_date_edit.setDate(QDate.currentDate())
         
-        year = self.calendarWidget.selectedDate().year()
-        month = self.calendarWidget.selectedDate().month()
-        self.__afficher_evenements(year, month)
+        self.__afficher_all_evenements()
+        
+        # connect signals
+        self.addEventBtn.clicked.connect(self.__ouvrir_ajout_evenement_dialog)
+        self.scheduler.currentPageChanged.connect(self.__afficher_evenements)
+        self.eventsListWidget.itemDoubleClicked.connect(self.__ouvrir_evenement_dialog)
+        self.reset_filtre_btn.clicked.connect(lambda: self.filtre_date_edit.setDate(QDate.currentDate()))
+        self.filter_btn.clicked.connect(self.__filter_events)
+
+    # TODO
+    @pyqtSlot()
+    def __ouvrir_evenement_dialog(self):
+        """
+        Cette fonction permet d'ouvrir une fenêtre qui affiche les détails d'un évènement
+        """
+        indexes = self.eventsListWidget.selectedIndexes()
+        if len(indexes) > 0:
+            print("Ouvrir la dialog de l'évènement", indexes[0].row())
+
+    @pyqtSlot()
+    def __ouvrir_ajout_evenement_dialog(self):
+        """
+        Cette fonction permet d'ouvrir une fenêtre qui permet l'ajout d'un évènement
+        """       
+        dialog = Ui_add_event_dialog(self)
+        ret = dialog.exec_()
+        
+        if ret == 1:
+            if dialog.potential_new_event != None:
+                EvenementDAO.add_event(dialog.potential_new_event)
+                self.__all_events.append(dialog.potential_new_event)
+                self.scheduler.update_events(self.__all_events)
+                self.scheduler.updateCells()
+            else:
+                # error (unknown error)
+                QMessageBox.critical(self, "Erreur!", "Error inconnue, veuillez réessayer!")
+        else:
+            print("L'ajout de l'évènement a été annuler!")
+    
+    @pyqtSlot()
+    def __filter_events(self):
+        """
+        Cette fonction permet de filtrer les évènements par date
+        """
+        wanted_date = self.filtre_date_edit.date()
+        self.__afficher_evenements(wanted_date.year(), wanted_date.month())
+
+    def __afficher_all_evenements(self):
+        """
+        Cette fonction permet d'afficher toutes les évènements
+        """
+        self.eventsListWidget.clear()
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        for i, e in enumerate(self.__all_events):
+            icon_name = dir_path+"/events_icons/event%d.png" % i
+            self.__draw_image(icon_name, (10, 10), e.color)
+            icon = QIcon(icon_name)
+                
+            item = QListWidgetItem(icon, str(e))
+            self.eventsListWidget.addItem(item)
+
+    def __afficher_evenements(self, year, month):
+        """
+        Cette fonction permet d'afficher les évènements de l'année et le mois souhaité
+        """
+        self.__all_events = EvenementDAO.get_all()
+        
+        self.eventsListWidget.clear()
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        for i, e in enumerate(self.__all_events):
+            if e.date_debut.date().year() == year and e.date_debut.date().month() == month:
+                icon_name = dir_path+"/events_icons/event%d.png" % i
+                self.__draw_image(icon_name, (10, 10), e.color)
+                icon = QIcon(icon_name)
+                
+                item = QListWidgetItem(icon, str(e))
+                self.eventsListWidget.addItem(item)
+
+    def __draw_image(self, file_path, dimension, color):
+        if isinstance(dimension, tuple):
+            img = Image.new('RGB', dimension, color=color)
+            img.save(file_path)
+            self.__add_border(file_path, file_path, 1)
+        else:
+            raise RuntimeError('dimension is not a tuple!')
+
+    def __add_border(self, input_image, output_image, border):
+        img = Image.open(input_image)
+        
+        if isinstance(border, int) or isinstance(border, tuple):
+            bimg = ImageOps.expand(img, border=border)
+        else:
+            raise RuntimeError('Border is not an integer or tuple!')
+        
+        bimg.save(output_image)
     
     def __setupUi(self):
         if self.objectName():
             self.setObjectName(u"AdminWindow")
         self.resize(530, 569)
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        f = open(dir_path+"/base_style.css", "r")
+        self.setStyleSheet(f.read())
+        f.close()
         self.centralwidget = QWidget(self)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setAutoFillBackground(False)
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        f = open(dir_path+"/base_style.css", "r")
-        self.centralwidget.setStyleSheet(f.read())
-        f.close()
+        self.centralwidget.setStyleSheet(u"")
         self.gridLayout_4 = QGridLayout(self.centralwidget)
         self.gridLayout_4.setObjectName(u"gridLayout_4")
         self.container = QVBoxLayout()
@@ -102,6 +193,16 @@ class Ui_AdminWindow(QMainWindow):
         self.events_tab.setObjectName(u"events_tab")
         self.gridLayout_2 = QGridLayout(self.events_tab)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
+        self.scheduler = Scheduler(self.events_tab, self.__all_events)
+        self.scheduler.setObjectName(u"scheduler")
+
+        self.gridLayout_2.addWidget(self.scheduler, 0, 0, 1, 2)
+
+        self.eventsListWidget = QListWidget(self.events_tab)
+        self.eventsListWidget.setObjectName(u"eventsListWidget")
+
+        self.gridLayout_2.addWidget(self.eventsListWidget, 2, 0, 1, 2)
+
         self.addEventBtn = QPushButton(self.events_tab)
         self.addEventBtn.setObjectName(u"addEventBtn")
         sizePolicy2 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -110,25 +211,43 @@ class Ui_AdminWindow(QMainWindow):
         sizePolicy2.setHeightForWidth(self.addEventBtn.sizePolicy().hasHeightForWidth())
         self.addEventBtn.setSizePolicy(sizePolicy2)
 
-        self.gridLayout_2.addWidget(self.addEventBtn, 3, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.addEventBtn, 1, 1, 1, 1)
 
-        self.calendarWidget = Scheduler(self.events_tab, self.__all_events)
-        self.calendarWidget.setObjectName(u"calendarWidget")
+        self.filter_widget = QWidget(self.events_tab)
+        self.filter_widget.setObjectName(u"filter_widget")
+        self.gridLayout_5 = QGridLayout(self.filter_widget)
+        self.gridLayout_5.setObjectName(u"gridLayout_5")
+        self.gridLayout_5.setSizeConstraint(QLayout.SetMinimumSize)
+        self.filtre_date_label = QLabel(self.filter_widget)
+        self.filtre_date_label.setObjectName(u"filtre_date_label")
 
-        self.gridLayout_2.addWidget(self.calendarWidget, 0, 0, 1, 2)
+        self.gridLayout_5.addWidget(self.filtre_date_label, 0, 0, 1, 1)
 
-        self.eventsListWidget = QListWidget(self.events_tab)
-        self.eventsListWidget.setObjectName(u"eventsListWidget")
-        self.eventsListWidget.setWordWrap(True)
+        self.filtre_date_edit = QDateEdit(self.filter_widget)
+        self.filtre_date_edit.setObjectName(u"filtre_date_edit")
+        self.filtre_date_edit.setCalendarPopup(True)
 
-        self.gridLayout_2.addWidget(self.eventsListWidget, 1, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.filtre_date_edit, 0, 1, 1, 1)
 
-        self.detailsEventBtn = QPushButton(self.events_tab)
-        self.detailsEventBtn.setObjectName(u"detailsEventBtn")
-        sizePolicy2.setHeightForWidth(self.detailsEventBtn.sizePolicy().hasHeightForWidth())
-        self.detailsEventBtn.setSizePolicy(sizePolicy2)
 
-        self.gridLayout_2.addWidget(self.detailsEventBtn, 1, 1, 1, 1, Qt.AlignHCenter|Qt.AlignVCenter)
+        self.gridLayout_2.addWidget(self.filter_widget, 3, 0, 1, 1)
+
+        self.filter_buttons_container = QWidget(self.events_tab)
+        self.filter_buttons_container.setObjectName(u"filter_buttons_container")
+        self.horizontalLayout = QHBoxLayout(self.filter_buttons_container)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.reset_filtre_btn = QPushButton(self.filter_buttons_container)
+        self.reset_filtre_btn.setObjectName(u"reset_filtre_btn")
+
+        self.horizontalLayout.addWidget(self.reset_filtre_btn)
+
+        self.filter_btn = QPushButton(self.filter_buttons_container)
+        self.filter_btn.setObjectName(u"filter_btn")
+
+        self.horizontalLayout.addWidget(self.filter_btn)
+
+
+        self.gridLayout_2.addWidget(self.filter_buttons_container, 3, 1, 1, 1)
 
         self.tabWidget.addTab(self.events_tab, "")
         self.staff_tab = QWidget()
@@ -163,84 +282,32 @@ class Ui_AdminWindow(QMainWindow):
         self.statusbar = QStatusBar(self)
         self.statusbar.setObjectName(u"statusbar")
         self.setStatusBar(self.statusbar)
+        #if QT_CONFIG(shortcut)
+        self.filtre_date_label.setBuddy(self.filtre_date_edit)
+        #endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.tabWidget, self.scheduler)
+        QWidget.setTabOrder(self.scheduler, self.addEventBtn)
+        QWidget.setTabOrder(self.addEventBtn, self.eventsListWidget)
+        QWidget.setTabOrder(self.eventsListWidget, self.filtre_date_edit)
+        QWidget.setTabOrder(self.filtre_date_edit, self.filter_btn)
+        QWidget.setTabOrder(self.filter_btn, self.reset_filtre_btn)
+        QWidget.setTabOrder(self.reset_filtre_btn, self.tableWidget)
 
         self.__retranslateUi()
 
         self.tabWidget.setCurrentIndex(0)
 
-        QMetaObject.connectSlotsByName(self)       
+        QMetaObject.connectSlotsByName(self)     
     # setupUi
 
     def __retranslateUi(self):
         self.setWindowTitle(QCoreApplication.translate("AdminWindow", u"Tableau de bord", None))
         self.titre.setText(QCoreApplication.translate("AdminWindow", u"Cin\u00e9-Club", None))
         self.addEventBtn.setText(QCoreApplication.translate("AdminWindow", u"Ajouter un \u00e9v\u00e8nement", None))
-        self.detailsEventBtn.setText(QCoreApplication.translate("AdminWindow", u"Plus d'infos", None))
+        self.filtre_date_label.setText(QCoreApplication.translate("AdminWindow", u"Filtrer par date", None))
+        self.reset_filtre_btn.setText(QCoreApplication.translate("AdminWindow", u"R\u00e9tablir", None))
+        self.filter_btn.setText(QCoreApplication.translate("AdminWindow", u"Filtrer", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.events_tab), QCoreApplication.translate("AdminWindow", u"\u00c9v\u00e8nements", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.staff_tab), QCoreApplication.translate("AdminWindow", u"Membres de la Mairie", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.history_tab), QCoreApplication.translate("AdminWindow", u"Historique", None))
     # retranslateUi
-
-    # TODO
-    def __ouvrir_evenement_dialog(self):
-        """
-        Cette fonction permet d'ouvrir une fenêtre qui affiche les détails d'un évènement
-        """    
-        indexes = self.eventsListWidget.selectedIndexes()
-        if len(indexes) > 0:
-            print("Ouvrir la dialog d'un évènement")
-            print(indexes[0].row())
-
-    def __ouvrir_ajout_evenement_dialog(self):
-        """
-        Cette fonction permet d'ouvrir une fenêtre qui permet l'ajout d'un évènement
-        """       
-        dialog = Ui_add_event_dialog(self)
-        ret = dialog.exec_()
-        
-        if ret == 1:
-            if dialog.potential_new_event != None:
-                print("Add ", str(dialog.potential_new_event))
-                EvenementDAO.add_event(dialog.potential_new_event)
-                self.__all_events.append(dialog.potential_new_event)
-                self.calendarWidget.update_events(self.__all_events)
-                self.calendarWidget.updateCells()
-            else:
-                print("DO NOTHING!", ret)
-        else:
-            print("DO NOTHING!", ret)
-
-    def __afficher_evenements(self, year, month):
-        """
-        Cette fonction permet d'afficher les évènements dans la listview
-        """
-        self.__all_events = EvenementDAO.get_all()
-        
-        self.eventsListWidget.clear()
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        for i, e in enumerate(self.__all_events):
-            if e.date_debut.date().year() == year and e.date_debut.date().month() == month:
-                icon_name = dir_path+"/events_icons/event%d.png" % i
-                self.__draw_image(icon_name, (10, 10), e.color)
-                icon = QIcon(icon_name)
-                
-                item = QListWidgetItem(icon, str(e))
-                self.eventsListWidget.addItem(item)
-
-    def __draw_image(self, file_path, dimension, color):
-        if isinstance(dimension, tuple):
-            img = Image.new('RGB', dimension, color=color)
-            img.save(file_path)
-            self.__add_border(file_path, file_path, 1)
-        else:
-            raise RuntimeError('dimension is not a tuple!')
-
-    def __add_border(self, input_image, output_image, border):
-        img = Image.open(input_image)
-        
-        if isinstance(border, int) or isinstance(border, tuple):
-            bimg = ImageOps.expand(img, border=border)
-        else:
-            raise RuntimeError('Border is not an integer or tuple!')
-        
-        bimg.save(output_image)
