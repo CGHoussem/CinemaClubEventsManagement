@@ -1,5 +1,10 @@
-"""
-Ce module contient les DAO de toutes les models
+r"""
+Ce module permet de gérer les tables dans la base de donnée appropriés à les models
+
+La liste des DAO:
+    - UtilisateurDAO
+    - EvenementDAO
+    - SalleDAO
 """
 
 from db import DBConnexion
@@ -10,7 +15,6 @@ from Models.evenement import Evenement
 from Models.salle import Salle
 from PyQt5.QtCore import QDate, QDateTime, QTime, QTimeZone
 
-DB_NAME = "miniprojet.db"
 
 class UtilisateurDAO:
    
@@ -26,6 +30,50 @@ class UtilisateurDAO:
         conn = DBConnexion().Instance
         cursor = conn.cursor()
         query = "SELECT * FROM `USER`"
+        cursor.execute(query)
+        
+        rows = cursor.fetchall()
+        for row in rows:
+            u = Utilisateur(int(row[0]), row[1], row[2], row[3], row[4], row[5], row[6], int(row[7])==1)
+            liste.append(u)
+        
+        conn.close()
+        return liste
+
+    @staticmethod
+    def get_by_id(id):
+        """
+        Cette fonction permet de renvoyer l'utilisateur d'identifiant 'id'
+        
+            Parameters:
+                id: l'identifiant de l'utilisateur voulu
+            Return:
+                Un objet de type Utilisateur()
+        """
+        user = None
+        if id != None:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+            query = "SELECT * FROM `USER` WHERE `ID` = ?"
+            cursor.execute(query, [id])
+            
+            user_data = cursor.fetchone()
+            user = Utilisateur(id, user_data[1], user_data[2], user_data[3], user_data[4], user_data[5], user_data[6], int(user_data[7])==1)
+            conn.close()
+        return user
+    
+    @staticmethod
+    def get_all_admins():
+        """
+        Cette fonction permet de renvoyer une liste des utilisateurs ayant status ADMIN
+        
+            Return:
+                Une liste d'objets de type Utilisateur()
+        """
+        liste = []
+        conn = DBConnexion().Instance
+        cursor = conn.cursor()
+        query = "SELECT * FROM `USER` WHERE `EST_ADMIN`=1"
         cursor.execute(query)
         
         rows = cursor.fetchall()
@@ -58,7 +106,23 @@ class EvenementDAO:
             date_fin = QDate(int(row[4][6:10]), int(row[4][3:5]), int(row[4][:2]))
             time_debut = QTime(int(row[3][11:13]), int(row[3][15:17]))
             time_fin = QTime(int(row[4][11:13]), int(row[4][15:17]))
-            e = Evenement(int(row[0]), row[1], row[2], QDateTime(date_debut, time_debut), QDateTime(date_fin, time_fin), row[5], row[6], row[7])
+            
+            # Récuperer la salle
+            salle_id = int(row[5])
+            salle = SalleDAO.get_by_id(salle_id)
+            
+            e = Evenement(int(row[0]), row[1], row[2], QDateTime(date_debut, time_debut), QDateTime(date_fin, time_fin), salle, row[6], row[7])
+            # Récuperer la liste des responsables
+            query = "SELECT `ID_USER` FROM `EVENT_RESPONSABLE` WHERE `ID_EVENT`=?"
+            cursor.execute(query, [int(row[0])])
+            
+            rows_event_responsable = cursor.fetchall()
+            for row_event_responsable in rows_event_responsable:
+                id_user = int(row_event_responsable[0])
+                # Récuperer le responsable d'id 'id_user'
+                responsable = UtilisateurDAO.get_by_id(id_user)
+                e.ajouterResponsable(responsable)
+            
             liste.append(e)
         
         conn.close()
@@ -146,3 +210,26 @@ class SalleDAO:
         
         conn.close()
         return liste
+
+    @staticmethod
+    def get_by_id(id):
+        """
+        Cette fonction permet de renvoyer la salle d'identifiant 'id'
+        
+            Parameters:
+                id: L'identifiant de la salle
+            Return:
+                Un objet de type Salle()
+        """
+        salle = None
+        if id != None:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+            query = "SELECT * FROM `SALLE` WHERE `ID` = ?"
+            cursor.execute(query, [id])
+            
+            salle_data = cursor.fetchone()
+            salle = Salle(id, salle_data[1], salle_data[2], int(salle_data[3]))
+            
+            conn.close()
+        return salle

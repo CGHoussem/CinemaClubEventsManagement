@@ -1,17 +1,13 @@
 # -*- coding: utf-8 -*-
 
-################################################################################
-## Form generated from reading UI file 'main_window.ui'
-## Created by: Qt User Interface Compiler version 5.14.1
-##
-##
-## WARNING! All changes made in this file will be lost when recompiling UI file!
-################################################################################
-
 import os
 import re
+import hashlib
+
+from DAO.DAOs import UtilisateurDAO
+
 from PyQt5.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint,
-                          QRect, QSize, Qt, QUrl)
+                          QRect, QSize, Qt, QUrl, pyqtSlot)
 from PyQt5.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
                          QFontDatabase, QIcon, QLinearGradient, QPainter,
                          QPalette, QPixmap, QRadialGradient)
@@ -19,26 +15,52 @@ from PyQt5.QtWidgets import *
 
 from UI.admin_window import Ui_AdminWindow
 
-TESTING_EMAIL = "testing@testing.com"
-TESTING_PASSWORD = "123456789"
-
 
 class Ui_MainWindow(QMainWindow):
     def __init__(self, parent=None, flags=Qt.WindowFlags()):
         super().__init__(parent=parent, flags=flags)
-        self.setupUi()
+        self.__setupUi()
+        
+        # setup signals
+        self.connect_btn.clicked.connect(self.connecter)
     
-    def setupUi(self):
+    @pyqtSlot()
+    def connecter(self):
+        email = self.email_input.text()
+        if self.pass_input.text() != "":
+            password = hashlib.sha256(self.pass_input.text().encode()).hexdigest()
+        if len(email) == 0:
+            self.error_text.setText("Il faut saisir votre email adresse!")
+        else:
+            check_format = re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email)
+            if check_format != None:
+                users = UtilisateurDAO.get_all()
+                for u in users:
+                    if u.email == email:
+                        if u.admin:
+                            # Check password
+                            if u.password == password:
+                                self.hide()
+                                admin_window = Ui_AdminWindow(self)
+                                admin_window.show()
+                            else:
+                                self.error_text.setText("Le mot de passe est incorrecte!")
+                        else:
+                            QMessageBox.critical(self, "Erreur", "Vous n'êtes pas un administrateur!")
+                        break
+                else:
+                    self.error_text.setText("L'adresse email ou mot de passe non valide!")
+            else:
+                self.error_text.setText("Format d'adresse email non valide!")
+
+    def __setupUi(self):
         if self.objectName():
             self.setObjectName(u"MainWindow")
         self.resize(555, 445)
+        self.setStyleSheet(open("UI/styles/base_style.css", "r").read())
         self.centralwidget = QWidget(self)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setAutoFillBackground(False)
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        f = open(dir_path+"/base_style.css", "r")
-        self.centralwidget.setStyleSheet(f.read())
-        f.close()
         self.gridLayout_4 = QGridLayout(self.centralwidget)
         self.gridLayout_4.setObjectName(u"gridLayout_4")
         self.container = QVBoxLayout()
@@ -119,6 +141,7 @@ class Ui_MainWindow(QMainWindow):
         sizePolicy2.setHeightForWidth(self.error_text.sizePolicy().hasHeightForWidth())
         self.error_text.setSizePolicy(sizePolicy2)
         self.error_text.setLayoutDirection(Qt.LeftToRight)
+        self.error_text.setStyleSheet(open("UI/styles/error.css").read())
 
         self.form_grid.addWidget(self.error_text, 1, 1, 1, 1, Qt.AlignRight)
 
@@ -142,13 +165,12 @@ class Ui_MainWindow(QMainWindow):
         self.statusbar.setObjectName(u"statusbar")
         self.setStatusBar(self.statusbar)
 
-        self.retranslateUi()
-        self.setupSignals()
+        self.__retranslateUi()
         
         QMetaObject.connectSlotsByName(self)
     # setupUi
 
-    def retranslateUi(self):
+    def __retranslateUi(self):
         self.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.titre.setText(QCoreApplication.translate("MainWindow", u"Cin\u00e9-Club", None))
         self.authentification_label.setText(QCoreApplication.translate("MainWindow", u"Authentification", None))
@@ -158,29 +180,3 @@ class Ui_MainWindow(QMainWindow):
         self.email_input.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Entrez votre adresse email", None))
         self.pass_input.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Entrez votre mot de passe", None))
     # retranslateUi
-
-    def setupSignals(self):
-        self.connect_btn.clicked.connect(self.connecter)
-    # setupSignals
-
-    def connecter(self):
-        self.hide()
-        admin_window = Ui_AdminWindow(self)
-        admin_window.show()
-        # email = self.email_input.text()
-        # password = self.pass_input.text()
-        
-        # if len(email) == 0:
-        #     self.error_text.setText("Il faut saisir vos coordoonées!")
-        # else:
-        #     check_format = re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email)
-        #     if check_format != None:
-        #         if email == TESTING_EMAIL and password == TESTING_PASSWORD:
-        #             self.hide()
-        #             admin_window = Ui_AdminWindow(self)
-        #             admin_window.show()
-        #         else:
-        #             self.error_text.setText("L'adresse email ou mot de passe non valide!")
-        #     else:
-        #         self.error_text.setText("Format d'adresse email non valide!")
-

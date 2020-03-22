@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'admin_window.ui'
+## Form generated from reading UI file 'info_event_dialog.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.14.1
 ##
@@ -16,12 +16,13 @@ from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
 from PySide2.QtWidgets import *
 
 
-class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
-        if MainWindow.objectName():
-            MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(530, 569)
-        MainWindow.setStyleSheet(u"QLabel#titre{ \n"
+class Ui_info_event_dialog(object):
+    def setupUi(self, info_event_dialog):
+        if info_event_dialog.objectName():
+            info_event_dialog.setObjectName(u"info_event_dialog")
+        info_event_dialog.resize(500, 672)
+        info_event_dialog.setMinimumSize(QSize(500, 600))
+        info_event_dialog.setStyleSheet(u"QLabel#titre{ \n"
 "	font: 28pt \"Lucida Calligraphy\";\n"
 "	color: rgb(255, 44, 47)\n"
 "}\n"
@@ -50,23 +51,19 @@ class Ui_MainWindow(object):
 "	background-color: #138496;\n"
 "	border-color: #117a8b;\n"
 "}\n"
-"QLineEdit {\n"
+"QLineEdit, QTextEdit, QListWidget, QComboBox {\n"
 "	color: #495057;\n"
 "	background-color: #fff;\n"
 "	border: 1px solid #ced4da;\n"
 "	border-radius: 2px;\n"
 "	padding: 4 1px;\n"
-"}")
-        self.centralwidget = QWidget(MainWindow)
-        self.centralwidget.setObjectName(u"centralwidget")
-        self.centralwidget.setAutoFillBackground(False)
-        self.centralwidget.setStyleSheet(u"")
-        self.gridLayout_4 = QGridLayout(self.centralwidget)
-        self.gridLayout_4.setObjectName(u"gridLayout_4")
-        self.container = QVBoxLayout()
-        self.container.setObjectName(u"container")
-        self.container.setContentsMargins(5, 5, 5, 5)
-        self.titre = QLabel(self.centralwidget)
+"}\n"
+"")
+        info_event_dialog.setSizeGripEnabled(True)
+        info_event_dialog.setModal(True)
+        self.verticalLayout = QVBoxLayout(info_event_dialog)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.titre = QLabel(info_event_dialog)
         self.titre.setObjectName(u"titre")
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
@@ -74,9 +71,9 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.titre.sizePolicy().hasHeightForWidth())
         self.titre.setSizePolicy(sizePolicy)
 
-        self.container.addWidget(self.titre)
+        self.verticalLayout.addWidget(self.titre)
 
-        self.line = QFrame(self.centralwidget)
+        self.line = QFrame(info_event_dialog)
         self.line.setObjectName(u"line")
         sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         sizePolicy1.setHorizontalStretch(0)
@@ -86,135 +83,170 @@ class Ui_MainWindow(object):
         self.line.setFrameShadow(QFrame.Sunken)
         self.line.setFrameShape(QFrame.HLine)
 
-        self.container.addWidget(self.line)
+        self.verticalLayout.addWidget(self.line)
 
-        self.form_grid = QGridLayout()
-        self.form_grid.setObjectName(u"form_grid")
-        self.form_grid.setSizeConstraint(QLayout.SetFixedSize)
-        self.form_grid.setContentsMargins(5, 5, 5, 5)
-        self.tabWidget = QTabWidget(self.centralwidget)
-        self.tabWidget.setObjectName(u"tabWidget")
-        self.events_tab = QWidget()
-        self.events_tab.setObjectName(u"events_tab")
-        self.gridLayout_2 = QGridLayout(self.events_tab)
-        self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.calendarWidget = QCalendarWidget(self.events_tab)
-        self.calendarWidget.setObjectName(u"calendarWidget")
+        self.scrollArea = QScrollArea(info_event_dialog)
+        self.scrollArea.setObjectName(u"scrollArea")
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollAreaWidgetContents = QWidget()
+        self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 480, 557))
+        self.gridLayout_4 = QGridLayout(self.scrollAreaWidgetContents)
+        self.gridLayout_4.setObjectName(u"gridLayout_4")
+        self.add_event_layout = QGridLayout()
+        self.add_event_layout.setObjectName(u"add_event_layout")
+        self.add_event_layout.setSizeConstraint(QLayout.SetDefaultConstraint)
+        self.responsables_label = QLabel(self.scrollAreaWidgetContents)
+        self.responsables_label.setObjectName(u"responsables_label")
 
-        self.gridLayout_2.addWidget(self.calendarWidget, 0, 0, 1, 2)
+        self.add_event_layout.addWidget(self.responsables_label, 3, 0, 1, 1)
 
-        self.eventsListWidget = QListWidget(self.events_tab)
-        self.eventsListWidget.setObjectName(u"eventsListWidget")
+        self.responsable_list_widget = QListWidget(self.scrollAreaWidgetContents)
+        self.responsable_list_widget.setObjectName(u"responsable_list_widget")
+        sizePolicy1.setHeightForWidth(self.responsable_list_widget.sizePolicy().hasHeightForWidth())
+        self.responsable_list_widget.setSizePolicy(sizePolicy1)
+        self.responsable_list_widget.setMaximumSize(QSize(16777215, 300))
 
-        self.gridLayout_2.addWidget(self.eventsListWidget, 2, 0, 1, 2)
+        self.add_event_layout.addWidget(self.responsable_list_widget, 3, 1, 1, 1)
 
-        self.addEventBtn = QPushButton(self.events_tab)
-        self.addEventBtn.setObjectName(u"addEventBtn")
+        self.date_fin_evenement_value = QLabel(self.scrollAreaWidgetContents)
+        self.date_fin_evenement_value.setObjectName(u"date_fin_evenement_value")
+
+        self.add_event_layout.addWidget(self.date_fin_evenement_value, 5, 1, 1, 1)
+
+        self.event_color_label = QLabel(self.scrollAreaWidgetContents)
+        self.event_color_label.setObjectName(u"event_color_label")
+
+        self.add_event_layout.addWidget(self.event_color_label, 7, 0, 1, 1)
+
+        self.projection_evenement_btn = QPushButton(self.scrollAreaWidgetContents)
+        self.projection_evenement_btn.setObjectName(u"projection_evenement_btn")
         sizePolicy2 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.addEventBtn.sizePolicy().hasHeightForWidth())
-        self.addEventBtn.setSizePolicy(sizePolicy2)
+        sizePolicy2.setHeightForWidth(self.projection_evenement_btn.sizePolicy().hasHeightForWidth())
+        self.projection_evenement_btn.setSizePolicy(sizePolicy2)
 
-        self.gridLayout_2.addWidget(self.addEventBtn, 1, 1, 1, 1)
+        self.add_event_layout.addWidget(self.projection_evenement_btn, 8, 0, 1, 2, Qt.AlignHCenter)
 
-        self.filter_widget = QWidget(self.events_tab)
-        self.filter_widget.setObjectName(u"filter_widget")
-        self.gridLayout_5 = QGridLayout(self.filter_widget)
-        self.gridLayout_5.setObjectName(u"gridLayout_5")
-        self.gridLayout_5.setSizeConstraint(QLayout.SetMinimumSize)
-        self.filtre_date_label = QLabel(self.filter_widget)
-        self.filtre_date_label.setObjectName(u"filtre_date_label")
+        self.description_evenement_value = QTextBrowser(self.scrollAreaWidgetContents)
+        self.description_evenement_value.setObjectName(u"description_evenement_value")
+        sizePolicy1.setHeightForWidth(self.description_evenement_value.sizePolicy().hasHeightForWidth())
+        self.description_evenement_value.setSizePolicy(sizePolicy1)
+        self.description_evenement_value.setMinimumSize(QSize(0, 0))
+        self.description_evenement_value.setMaximumSize(QSize(16777215, 100))
 
-        self.gridLayout_5.addWidget(self.filtre_date_label, 0, 0, 1, 1)
+        self.add_event_layout.addWidget(self.description_evenement_value, 2, 1, 1, 1)
 
-        self.filtre_date_edit = QDateEdit(self.filter_widget)
-        self.filtre_date_edit.setObjectName(u"filtre_date_edit")
-        self.filtre_date_edit.setCalendarPopup(True)
+        self.color_evenement_frame = QFrame(self.scrollAreaWidgetContents)
+        self.color_evenement_frame.setObjectName(u"color_evenement_frame")
+        sizePolicy3 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.color_evenement_frame.sizePolicy().hasHeightForWidth())
+        self.color_evenement_frame.setSizePolicy(sizePolicy3)
+        self.color_evenement_frame.setMinimumSize(QSize(50, 50))
+        self.color_evenement_frame.setStyleSheet(u"background-color: rgb(255, 170, 255)")
+        self.color_evenement_frame.setFrameShape(QFrame.StyledPanel)
+        self.color_evenement_frame.setFrameShadow(QFrame.Raised)
 
-        self.gridLayout_5.addWidget(self.filtre_date_edit, 0, 1, 1, 1)
+        self.add_event_layout.addWidget(self.color_evenement_frame, 7, 1, 1, 1)
 
+        self.description_evenement_label = QLabel(self.scrollAreaWidgetContents)
+        self.description_evenement_label.setObjectName(u"description_evenement_label")
 
-        self.gridLayout_2.addWidget(self.filter_widget, 3, 0, 1, 1)
+        self.add_event_layout.addWidget(self.description_evenement_label, 2, 0, 1, 1, Qt.AlignTop)
 
-        self.filter_buttons_container = QWidget(self.events_tab)
-        self.filter_buttons_container.setObjectName(u"filter_buttons_container")
-        self.horizontalLayout = QHBoxLayout(self.filter_buttons_container)
+        self.date_debut_label = QLabel(self.scrollAreaWidgetContents)
+        self.date_debut_label.setObjectName(u"date_debut_label")
+
+        self.add_event_layout.addWidget(self.date_debut_label, 4, 0, 1, 1)
+
+        self.salle_container = QWidget(self.scrollAreaWidgetContents)
+        self.salle_container.setObjectName(u"salle_container")
+        self.horizontalLayout = QHBoxLayout(self.salle_container)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.reset_filtre_btn = QPushButton(self.filter_buttons_container)
-        self.reset_filtre_btn.setObjectName(u"reset_filtre_btn")
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.salle_label_value = QLabel(self.salle_container)
+        self.salle_label_value.setObjectName(u"salle_label_value")
 
-        self.horizontalLayout.addWidget(self.reset_filtre_btn)
+        self.horizontalLayout.addWidget(self.salle_label_value)
 
-        self.filter_btn = QPushButton(self.filter_buttons_container)
-        self.filter_btn.setObjectName(u"filter_btn")
+        self.salle_info_btn = QPushButton(self.salle_container)
+        self.salle_info_btn.setObjectName(u"salle_info_btn")
 
-        self.horizontalLayout.addWidget(self.filter_btn)
+        self.horizontalLayout.addWidget(self.salle_info_btn)
+
+        self.horizontalLayout.setStretch(1, 1)
+
+        self.add_event_layout.addWidget(self.salle_container, 6, 1, 1, 1)
+
+        self.date_debut_evenement_value = QLabel(self.scrollAreaWidgetContents)
+        self.date_debut_evenement_value.setObjectName(u"date_debut_evenement_value")
+
+        self.add_event_layout.addWidget(self.date_debut_evenement_value, 4, 1, 1, 1)
+
+        self.date_fin_label = QLabel(self.scrollAreaWidgetContents)
+        self.date_fin_label.setObjectName(u"date_fin_label")
+
+        self.add_event_layout.addWidget(self.date_fin_label, 5, 0, 1, 1)
+
+        self.salle_label = QLabel(self.scrollAreaWidgetContents)
+        self.salle_label.setObjectName(u"salle_label")
+
+        self.add_event_layout.addWidget(self.salle_label, 6, 0, 1, 1)
+
+        self.nom_evenement_value = QLabel(self.scrollAreaWidgetContents)
+        self.nom_evenement_value.setObjectName(u"nom_evenement_value")
+        self.nom_evenement_value.setStyleSheet(u"font: 14pt \"Arial\";")
+
+        self.add_event_layout.addWidget(self.nom_evenement_value, 0, 0, 2, 2)
 
 
-        self.gridLayout_2.addWidget(self.filter_buttons_container, 3, 1, 1, 1)
+        self.gridLayout_4.addLayout(self.add_event_layout, 0, 0, 1, 1)
 
-        self.tabWidget.addTab(self.events_tab, "")
-        self.staff_tab = QWidget()
-        self.staff_tab.setObjectName(u"staff_tab")
-        self.gridLayout = QGridLayout(self.staff_tab)
-        self.gridLayout.setObjectName(u"gridLayout")
-        self.tableWidget = QTableWidget(self.staff_tab)
-        self.tableWidget.setObjectName(u"tableWidget")
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
-        self.gridLayout.addWidget(self.tableWidget, 0, 0, 1, 1)
+        self.verticalLayout.addWidget(self.scrollArea)
 
-        self.tabWidget.addTab(self.staff_tab, "")
-        self.history_tab = QWidget()
-        self.history_tab.setObjectName(u"history_tab")
-        self.tabWidget.addTab(self.history_tab, "")
+        self.buttonBox = QDialogButtonBox(info_event_dialog)
+        self.buttonBox.setObjectName(u"buttonBox")
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Close)
 
-        self.form_grid.addWidget(self.tabWidget, 0, 0, 1, 1)
+        self.verticalLayout.addWidget(self.buttonBox)
 
-
-        self.container.addLayout(self.form_grid)
-
-        self.container.setStretch(0, 1)
-        self.container.setStretch(2, 2)
-
-        self.gridLayout_4.addLayout(self.container, 0, 0, 1, 1)
-
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QMenuBar(MainWindow)
-        self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 530, 21))
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QStatusBar(MainWindow)
-        self.statusbar.setObjectName(u"statusbar")
-        MainWindow.setStatusBar(self.statusbar)
 #if QT_CONFIG(shortcut)
-        self.filtre_date_label.setBuddy(self.filtre_date_edit)
+        self.responsables_label.setBuddy(self.responsable_list_widget)
+        self.description_evenement_label.setBuddy(self.description_evenement_value)
+        self.salle_label_value.setBuddy(self.salle_info_btn)
+        self.salle_label.setBuddy(self.salle_info_btn)
 #endif // QT_CONFIG(shortcut)
-        QWidget.setTabOrder(self.tabWidget, self.calendarWidget)
-        QWidget.setTabOrder(self.calendarWidget, self.addEventBtn)
-        QWidget.setTabOrder(self.addEventBtn, self.eventsListWidget)
-        QWidget.setTabOrder(self.eventsListWidget, self.filtre_date_edit)
-        QWidget.setTabOrder(self.filtre_date_edit, self.filter_btn)
-        QWidget.setTabOrder(self.filter_btn, self.reset_filtre_btn)
-        QWidget.setTabOrder(self.reset_filtre_btn, self.tableWidget)
+        QWidget.setTabOrder(self.scrollArea, self.description_evenement_value)
+        QWidget.setTabOrder(self.description_evenement_value, self.responsable_list_widget)
+        QWidget.setTabOrder(self.responsable_list_widget, self.salle_info_btn)
+        QWidget.setTabOrder(self.salle_info_btn, self.projection_evenement_btn)
 
-        self.retranslateUi(MainWindow)
+        self.retranslateUi(info_event_dialog)
+        self.buttonBox.accepted.connect(info_event_dialog.accept)
+        self.buttonBox.rejected.connect(info_event_dialog.reject)
 
-        self.tabWidget.setCurrentIndex(0)
-
-
-        QMetaObject.connectSlotsByName(MainWindow)
+        QMetaObject.connectSlotsByName(info_event_dialog)
     # setupUi
 
-    def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
-        self.titre.setText(QCoreApplication.translate("MainWindow", u"Cin\u00e9-Club", None))
-        self.addEventBtn.setText(QCoreApplication.translate("MainWindow", u"Ajouter un \u00e9v\u00e8nement", None))
-        self.filtre_date_label.setText(QCoreApplication.translate("MainWindow", u"Filtrer par date", None))
-        self.reset_filtre_btn.setText(QCoreApplication.translate("MainWindow", u"R\u00e9tablir", None))
-        self.filter_btn.setText(QCoreApplication.translate("MainWindow", u"Filtrer", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.events_tab), QCoreApplication.translate("MainWindow", u"\u00c9v\u00e8nements", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.staff_tab), QCoreApplication.translate("MainWindow", u"Membres de la Mairie", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.history_tab), QCoreApplication.translate("MainWindow", u"Historique", None))
+    def retranslateUi(self, info_event_dialog):
+        info_event_dialog.setWindowTitle(QCoreApplication.translate("info_event_dialog", u"D\u00e9tails d'un \u00e9v\u00e8nement", None))
+        self.titre.setText(QCoreApplication.translate("info_event_dialog", u"Cin\u00e9-Club", None))
+        self.responsables_label.setText(QCoreApplication.translate("info_event_dialog", u"Reponsables", None))
+        self.date_fin_evenement_value.setText(QCoreApplication.translate("info_event_dialog", u"TextLabel", None))
+        self.event_color_label.setText(QCoreApplication.translate("info_event_dialog", u"Couleur", None))
+        self.projection_evenement_btn.setText(QCoreApplication.translate("info_event_dialog", u"Cette \u00e9v\u00e8nement est une projection", None))
+        self.description_evenement_label.setText(QCoreApplication.translate("info_event_dialog", u"Description", None))
+        self.date_debut_label.setText(QCoreApplication.translate("info_event_dialog", u"Date de d\u00e9but", None))
+        self.salle_label_value.setText(QCoreApplication.translate("info_event_dialog", u"TextLabel", None))
+        self.salle_info_btn.setText(QCoreApplication.translate("info_event_dialog", u"Plus d'infos", None))
+        self.date_debut_evenement_value.setText(QCoreApplication.translate("info_event_dialog", u"TextLabel", None))
+        self.date_fin_label.setText(QCoreApplication.translate("info_event_dialog", u"Date de fin", None))
+        self.salle_label.setText(QCoreApplication.translate("info_event_dialog", u"Salle", None))
+        self.nom_evenement_value.setText(QCoreApplication.translate("info_event_dialog", u"TextLabel", None))
     # retranslateUi
 

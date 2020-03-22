@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>info_event_dialog</class>
+ <widget class="QDialog" name="info_event_dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>500</width>
+    <height>672</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>500</width>
+    <height>600</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Détails d'un évènement</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QLabel#titre{ 
+	font: 28pt &quot;Lucida Calligraphy&quot;;
+	color: rgb(255, 44, 47)
+}
+QLabel#authentification_label{
+	font: bold
+}
+QPushButton {
+	color: #fff;
+	background-color: #007bff;
+	border-style: outset;
+	border-width: 1px;
+	border-radius: 10px;
+	border-color: #007bff;
+	font: bold 12px;
+	padding: 5px;
+}
+QPushButton:hover {
+	background-color: #0069d9;
+	border-color: #0062cc
+}
+QPushButton#detailsEventBtn {
+	background-color: #17a2b8;
+	border-color: #17a2b8;
+}
+QPushButton:hover#detailsEventBtn {
+	background-color: #138496;
+	border-color: #117a8b;
+}
+QLineEdit, QTextEdit, QListWidget, QComboBox {
+	color: #495057;
+	background-color: #fff;
+	border: 1px solid #ced4da;
+	border-radius: 2px;
+	padding: 4 1px;
+}
+</string>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="titre">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Ciné-Club</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>480</width>
+        <height>557</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_4" rowstretch="0">
+       <item row="0" column="0">
+        <layout class="QGridLayout" name="add_event_layout">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetDefaultConstraint</enum>
+         </property>
+         <item row="3" column="0">
+          <widget class="QLabel" name="responsables_label">
+           <property name="text">
+            <string>Reponsables</string>
+           </property>
+           <property name="buddy">
+            <cstring>responsable_list_widget</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QListWidget" name="responsable_list_widget">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>300</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QLabel" name="date_fin_evenement_value">
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="event_color_label">
+           <property name="text">
+            <string>Couleur</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0" colspan="2" alignment="Qt::AlignHCenter">
+          <widget class="QPushButton" name="projection_evenement_btn">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Cette évènement est une projection</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QTextBrowser" name="description_evenement_value">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>100</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1">
+          <widget class="QFrame" name="color_evenement_frame">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>50</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(255, 170, 255)</string>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0" alignment="Qt::AlignTop">
+          <widget class="QLabel" name="description_evenement_label">
+           <property name="text">
+            <string>Description</string>
+           </property>
+           <property name="buddy">
+            <cstring>description_evenement_value</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="date_debut_label">
+           <property name="text">
+            <string>Date de début</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="QWidget" name="salle_container" native="true">
+           <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="salle_label_value">
+              <property name="text">
+               <string>TextLabel</string>
+              </property>
+              <property name="buddy">
+               <cstring>salle_info_btn</cstring>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="salle_info_btn">
+              <property name="text">
+               <string>Plus d'infos</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLabel" name="date_debut_evenement_value">
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="date_fin_label">
+           <property name="text">
+            <string>Date de fin</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="salle_label">
+           <property name="text">
+            <string>Salle</string>
+           </property>
+           <property name="buddy">
+            <cstring>salle_info_btn</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0" rowspan="2" colspan="2">
+          <widget class="QLabel" name="nom_evenement_value">
+           <property name="styleSheet">
+            <string notr="true">font: 14pt &quot;Arial&quot;;</string>
+           </property>
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Close</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>description_evenement_value</tabstop>
+  <tabstop>responsable_list_widget</tabstop>
+  <tabstop>salle_info_btn</tabstop>
+  <tabstop>projection_evenement_btn</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>info_event_dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>266</x>
+     <y>738</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>info_event_dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>334</x>
+     <y>738</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

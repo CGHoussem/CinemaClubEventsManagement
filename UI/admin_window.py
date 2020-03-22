@@ -1,13 +1,5 @@
 # -*- coding: utf-8 -*-
 
-################################################################################
-## Form generated from reading UI file 'admin_window.ui'
-##
-## Created by: Qt User Interface Compiler version 5.14.1
-##
-## WARNING! All changes made in this file will be lost when recompiling UI file!
-################################################################################
-
 import os
 from DAO.DAOs import EvenementDAO
 
@@ -18,6 +10,7 @@ from PyQt5.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
 from PyQt5.QtWidgets import *
 
 from UI.add_event_dialog import Ui_add_event_dialog
+from UI.info_event_dialog import Ui_info_event_dialog
 
 from PIL import Image, ImageOps
 
@@ -52,12 +45,11 @@ class Ui_AdminWindow(QMainWindow):
         
         # connect signals
         self.addEventBtn.clicked.connect(self.__ouvrir_ajout_evenement_dialog)
-        self.scheduler.currentPageChanged.connect(self.__afficher_evenements)
+        #self.scheduler.currentPageChanged.connect(self.__afficher_evenements)
         self.eventsListWidget.itemDoubleClicked.connect(self.__ouvrir_evenement_dialog)
         self.reset_filtre_btn.clicked.connect(lambda: self.filtre_date_edit.setDate(QDate.currentDate()))
         self.filter_btn.clicked.connect(self.__filter_events)
 
-    # TODO
     @pyqtSlot()
     def __ouvrir_evenement_dialog(self):
         """
@@ -66,6 +58,8 @@ class Ui_AdminWindow(QMainWindow):
         indexes = self.eventsListWidget.selectedIndexes()
         if len(indexes) > 0:
             print("Ouvrir la dialog de l'évènement", indexes[0].row())
+            dialog = Ui_info_event_dialog(self, Qt.WindowFlags(), self.__all_events[indexes[0].row()])
+            dialog.show()
 
     @pyqtSlot()
     def __ouvrir_ajout_evenement_dialog(self):
@@ -149,9 +143,7 @@ class Ui_AdminWindow(QMainWindow):
             self.setObjectName(u"AdminWindow")
         self.resize(530, 569)
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        f = open(dir_path+"/base_style.css", "r")
-        self.setStyleSheet(f.read())
-        f.close()
+        self.setStyleSheet(open("UI/styles/base_style.css", "r").read())
         self.centralwidget = QWidget(self)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setAutoFillBackground(False)

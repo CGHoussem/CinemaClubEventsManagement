@@ -1,14 +1,7 @@
 # -*- coding: utf-8 -*-
 
-################################################################################
-## Form generated from reading UI file 'self.ui'
-##
-## Created by: Qt User Interface Compiler version 5.14.1
-##
-## WARNING! All changes made in this file will be lost when recompiling UI file!
-################################################################################
-
 import os
+
 from DAO.DAOs import UtilisateurDAO, SalleDAO
 from Models.utilisateur import Metier
 from Models.presentation import PresentationAuteur
@@ -71,10 +64,7 @@ class Ui_add_event_dialog(QDialog):
         self.setWindowModality(Qt.WindowModal)
         self.resize(500, 600)
         self.setMinimumSize(QSize(500, 600))
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        f = open(dir_path+"/base_style.css", "r")
-        self.setStyleSheet(f.read())
-        f.close()
+        self.setStyleSheet(open("UI/styles/base_style.css", "r").read())
         self.setSizeGripEnabled(True)
         self.setModal(True)
         self.verticalLayout = QVBoxLayout(self)
@@ -450,9 +440,12 @@ class Ui_add_event_dialog(QDialog):
                 p.setColor(p.Foreground, color)
                 self.event_color_label.setPalette(p)
                 self.__event_color = color
-    
-    # TODO save event
+
+    @pyqtSlot()
     def __local_save_event(self):
+        """
+        Cette fonction permet de sauvegarder l'évènement pour future utilisation
+        """
         nom = self.nom_evenement_edit.text()
         description = self.description_evenement_edit.toPlainText()
         date_debut = self.date_debut_edit.dateTime()

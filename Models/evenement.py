@@ -22,7 +22,7 @@ class Evenement:
         Cette fonction permet d'ajouter un membre responsable de l'évèvenement
 
             Parameters:
-                membre (Membre): Le membre que vous voulez ajouter
+                membre (Membre): Le membre à ajouter
         """
         if membre.metier in [Metier.MEMBRE_MAIRIE, Metier.MEMBRE_CLUB]:
             self.responsables.append(membre)

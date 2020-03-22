@@ -41,6 +41,10 @@ class Utilisateur:
         return self.__email
 
     @property
+    def password(self):
+        return self.__motdepasse
+
+    @property
     def adresse(self):
         return self.__adresse
 
@@ -55,6 +59,10 @@ class Utilisateur:
     @property
     def prenom(self):
         return self.__prenom
+    
+    @property
+    def admin(self):
+        return self.__est_admin
     
     def __str__(self):
         return self.__nom.upper() + " " + self.__prenom

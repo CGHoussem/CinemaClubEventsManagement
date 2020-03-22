@@ -1,13 +1,5 @@
 # -*- coding: utf-8 -*-
 
-################################################################################
-## Form generated from reading UI file 'add_animateur_dialog.ui'
-##
-## Created by: Qt User Interface Compiler version 5.14.1
-##
-## WARNING! All changes made in this file will be lost when recompiling UI file!
-################################################################################
-
 import os
 
 from PyQt5.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint,
@@ -37,10 +29,7 @@ class Ui_add_animateur_dialog(QDialog):
         self.setWindowModality(Qt.WindowModal)
         self.resize(500, 461)
         self.setMinimumSize(QSize(500, 0))
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        f = open(dir_path+"/base_style.css", "r")
-        self.setStyleSheet(f.read())
-        f.close()
+        self.setStyleSheet(open("UI/styles/base_style.css", "r").read())
         self.setSizeGripEnabled(True)
         self.setModal(True)
         self.verticalLayout = QVBoxLayout(self)
