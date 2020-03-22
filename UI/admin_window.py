@@ -47,8 +47,14 @@ class Ui_AdminWindow(QMainWindow):
         self.addEventBtn.clicked.connect(self.__ouvrir_ajout_evenement_dialog)
         #self.scheduler.currentPageChanged.connect(self.__afficher_evenements)
         self.eventsListWidget.itemDoubleClicked.connect(self.__ouvrir_evenement_dialog)
-        self.reset_filtre_btn.clicked.connect(lambda: self.filtre_date_edit.setDate(QDate.currentDate()))
+        self.reset_filtre_btn.clicked.connect(self.__reset_filter)
         self.filter_btn.clicked.connect(self.__filter_events)
+
+    @pyqtSlot()
+    def __reset_filter(self):
+        self.filtre_date_edit.setDate(QDate.currentDate())
+        self.__afficher_all_evenements()
+        
 
     @pyqtSlot()
     def __ouvrir_evenement_dialog(self):
