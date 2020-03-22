@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from PyQt5.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint,
-    QRect, QSize, QUrl, Qt)
+    QRect, QSize, QUrl, Qt, pyqtSlot)
 from PyQt5.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
     QFontDatabase, QIcon, QLinearGradient, QPalette, QPainter, QPixmap,
     QRadialGradient)
 from PyQt5.QtWidgets import *
 
+from UI.info_salle_dialog import Ui_info_salle_dialog
 
 class Ui_info_event_dialog(QDialog):
     def __init__(self, parent, f, evenement):
@@ -24,10 +25,15 @@ class Ui_info_event_dialog(QDialog):
 
         # setup signals
         self.responsable_list_widget.itemDoubleClicked.connect(lambda e: print("Ouvrir le dialog du responsable"))
-        self.salle_info_btn.clicked.connect(lambda e: print("Ouvrir le dialog de la salle"))
+        self.salle_info_btn.clicked.connect(self.__open_salle_dialog)
         self.projection_evenement_btn.clicked.connect(lambda e: print("Ouvrir le dialog de la projection"))
     
         self.__inject()
+  
+    @pyqtSlot()
+    def __open_salle_dialog(self):
+        dialog = Ui_info_salle_dialog(self, Qt.WindowFlags(), self.__evenement.salle)
+        dialog.show()
   
     def __inject(self):
         def format_date(datetime):

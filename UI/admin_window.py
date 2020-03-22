@@ -55,7 +55,6 @@ class Ui_AdminWindow(QMainWindow):
         self.filtre_date_edit.setDate(QDate.currentDate())
         self.__afficher_all_evenements()
         
-
     @pyqtSlot()
     def __ouvrir_evenement_dialog(self):
         """
@@ -63,7 +62,6 @@ class Ui_AdminWindow(QMainWindow):
         """
         indexes = self.eventsListWidget.selectedIndexes()
         if len(indexes) > 0:
-            print("Ouvrir la dialog de l'évènement", indexes[0].row())
             dialog = Ui_info_event_dialog(self, Qt.WindowFlags(), self.__all_events[indexes[0].row()])
             dialog.show()
 

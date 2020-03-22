@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>info_event_dialog</class>
+ <widget class="QDialog" name="info_event_dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>500</width>
+    <height>384</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Détails d'une salle</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QLabel#titre{ 
+	font: 28pt &quot;Lucida Calligraphy&quot;;
+	color: rgb(255, 44, 47)
+}
+QLabel#authentification_label{
+	font: bold
+}
+QPushButton {
+	color: #fff;
+	background-color: #007bff;
+	border-style: outset;
+	border-width: 1px;
+	border-radius: 10px;
+	border-color: #007bff;
+	font: bold 12px;
+	padding: 5px;
+}
+QPushButton:hover {
+	background-color: #0069d9;
+	border-color: #0062cc
+}
+QPushButton#detailsEventBtn {
+	background-color: #17a2b8;
+	border-color: #17a2b8;
+}
+QPushButton:hover#detailsEventBtn {
+	background-color: #138496;
+	border-color: #117a8b;
+}
+QLineEdit, QTextEdit, QListWidget, QComboBox {
+	color: #495057;
+	background-color: #fff;
+	border: 1px solid #ced4da;
+	border-radius: 2px;
+	padding: 4 1px;
+}
+</string>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="titre">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Ciné-Club</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <layout class="QGridLayout" name="_2">
+       <item row="0" column="0">
+        <layout class="QGridLayout" name="add_event_layout" rowstretch="0,0,0,0,0">
+         <item row="0" column="0" rowspan="2" colspan="2">
+          <widget class="QLabel" name="nom_salle_value">
+           <property name="styleSheet">
+            <string notr="true">font: 14pt &quot;Arial&quot;;</string>
+           </property>
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QTextBrowser" name="adresse_salle_value">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>100</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLabel" name="nombre_places_salle_value">
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QWidget" name="salle_container" native="true">
+           <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="responsable_salle_value">
+              <property name="text">
+               <string>TextLabel</string>
+              </property>
+              <property name="buddy">
+               <cstring>responsable_info_btn</cstring>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="responsable_info_btn">
+              <property name="text">
+               <string>Plus d'infos</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="nombre_place_salle_label">
+           <property name="text">
+            <string>Nombre de places</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="responsable_salle_label">
+           <property name="text">
+            <string>Reponsable</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0" alignment="Qt::AlignTop">
+          <widget class="QLabel" name="adresse_salle_label">
+           <property name="text">
+            <string>Adresse</string>
+           </property>
+           <property name="buddy">
+            <cstring>adresse_salle_value</cstring>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Close</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>adresse_salle_value</tabstop>
+  <tabstop>responsable_info_btn</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>info_event_dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>275</x>
+     <y>374</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>info_event_dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>343</x>
+     <y>374</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

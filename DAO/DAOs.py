@@ -205,7 +205,9 @@ class SalleDAO:
         
         rows = cursor.fetchall()
         for row in rows:
-            s = Salle(int(row[0]), row[1], row[2], int(row[3]))
+            responsable_id = int(row[2])
+            responsable = UtilisateurDAO.get_by_id(responsable_id)
+            s = Salle(int(row[0]), row[1], responsable, int(row[3]))
             liste.append(s)
         
         conn.close()
@@ -229,7 +231,9 @@ class SalleDAO:
             cursor.execute(query, [id])
             
             salle_data = cursor.fetchone()
-            salle = Salle(id, salle_data[1], salle_data[2], int(salle_data[3]))
+            responsable_id = int(salle_data[2])
+            responsable = UtilisateurDAO.get_by_id(responsable_id)
+            salle = Salle(id, salle_data[1], responsable, int(salle_data[3]))
             
             conn.close()
         return salle
