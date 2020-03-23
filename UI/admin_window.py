@@ -13,6 +13,7 @@ from UI.add_event_dialog import Ui_add_event_dialog
 from UI.info_event_dialog import Ui_info_event_dialog
 
 from PIL import Image, ImageOps
+from Models.evenement import Status
 
 class Scheduler(QCalendarWidget):
     def __init__(self, parent=None, events=[]):
@@ -103,8 +104,14 @@ class Ui_AdminWindow(QMainWindow):
             icon_name = dir_path+"/events_icons/event%d.png" % i
             self.__draw_image(icon_name, (10, 10), e.color)
             icon = QIcon(icon_name)
-                
+
             item = QListWidgetItem(icon, str(e))
+            if e.status == Status.EN_ATTENTE:
+                item.setBackground(QColor("#FF4B3C"))
+            if e.status == Status.EN_COURS:
+                item.setBackground(QColor("#FFCD42"))
+            if e.status == Status.FINI:
+                item.setBackground(QColor("#12D11C"))
             self.eventsListWidget.addItem(item)
 
     def __afficher_evenements(self, year, month):

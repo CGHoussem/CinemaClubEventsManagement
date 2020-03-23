@@ -11,7 +11,7 @@ from db import DBConnexion
 import sqlite3
 
 from Models.utilisateur import Utilisateur, Metier
-from Models.evenement import Evenement
+from Models.evenement import Evenement, Status
 from Models.salle import Salle
 from PyQt5.QtCore import QDate, QDateTime, QTime, QTimeZone
 
@@ -110,8 +110,12 @@ class EvenementDAO:
             # Récuperer la salle
             salle_id = int(row[5])
             salle = SalleDAO.get_by_id(salle_id)
-            
-            e = Evenement(int(row[0]), row[1], row[2], QDateTime(date_debut, time_debut), QDateTime(date_fin, time_fin), salle, row[6], row[7])
+            status = Status.EN_ATTENTE
+            if row[8] == 1:
+                status = Status.EN_COURS
+            elif row[8] == 2:
+                status = Status.FINI
+            e = Evenement(int(row[0]), row[1], row[2], QDateTime(date_debut, time_debut), QDateTime(date_fin, time_fin), salle, row[6], row[7], status)
             # Récuperer la liste des responsables
             query = "SELECT `ID_USER` FROM `EVENT_RESPONSABLE` WHERE `ID_EVENT`=?"
             cursor.execute(query, [int(row[0])])
@@ -119,7 +123,7 @@ class EvenementDAO:
             rows_event_responsable = cursor.fetchall()
             for row_event_responsable in rows_event_responsable:
                 id_user = int(row_event_responsable[0])
-                # Récuperer le responsable d'id 'id_user'
+                # Récuperer le responsable ayant comme id 'id_user'
                 responsable = UtilisateurDAO.get_by_id(id_user)
                 e.ajouterResponsable(responsable)
             
@@ -144,9 +148,9 @@ class EvenementDAO:
             cursor = conn.cursor()
 
             # Ajouter l'évènement
-            query_add_event = "INSERT INTO `EVENT` VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)"
-            print("attempt adding event", str(new_event))
-            cursor.execute(query_add_event, (new_event.nom, new_event.description, format_date(new_event.date_debut), format_date(new_event.date_fin), new_event.salle.id, new_event.color.name(), 0))
+            query_add_event = "INSERT INTO `EVENT` VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)"
+            print(Status.DISPONIBLE)
+            cursor.execute(query_add_event, (new_event.nom, new_event.description, format_date(new_event.date_debut), format_date(new_event.date_fin), new_event.salle.id, new_event.color.name(), 0, Status.DISPONIBLE))
             event_id = cursor.lastrowid
             
             # Ajouter les responsables
@@ -156,7 +160,6 @@ class EvenementDAO:
                 # Ajouter la liaison du responsable avec l'évèenement à la base de donnée 
                 responsables_data.append((event_id, r.id))
             
-            print("attempt adding responsables", responsables_data)
             cursor.executemany(query_add_responsable, responsables_data)
             
             # Si l'évènement est une projection alors ajouter la projection à la base de donéee
