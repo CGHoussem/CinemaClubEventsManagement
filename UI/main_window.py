@@ -14,7 +14,7 @@ from PyQt5.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
 from PyQt5.QtWidgets import *
 
 from UI.admin_window import Ui_AdminWindow
-
+from UI.member_window import Ui_MemberWindow
 
 class Ui_MainWindow(QMainWindow):
     def __init__(self, parent=None, flags=Qt.WindowFlags()):
@@ -22,11 +22,12 @@ class Ui_MainWindow(QMainWindow):
         self.__setupUi()
         
         # setup signals
-        self.connect_btn.clicked.connect(self.connecter)
+        self.connect_btn.clicked.connect(self.__connecter)
     
     @pyqtSlot()
-    def connecter(self):
+    def __connecter(self):
         email = self.email_input.text()
+        password = ""
         if self.pass_input.text() != "":
             password = hashlib.sha256(self.pass_input.text().encode()).hexdigest()
         if len(email) == 0:
@@ -41,17 +42,27 @@ class Ui_MainWindow(QMainWindow):
                             # Check password
                             if u.password == password:
                                 self.hide()
-                                admin_window = Ui_AdminWindow(self)
-                                admin_window.show()
+                                window = Ui_AdminWindow(self)
+                                window.show()
                             else:
-                                self.error_text.setText("Le mot de passe est incorrecte!")
+                                self.error_text.setText("Le mot de passe est incorrect!")
                         else:
-                            QMessageBox.critical(self, "Erreur", "Vous n'êtes pas un administrateur!")
+                            # Check password
+                            if u.password == password:
+                                self.hide()
+                                window = Ui_MemberWindow(parent=self, member=u)
+                                window.show()
+                            else:
+                                self.error_text.setText("Le mot de passe est incorrect!")
                         break
                 else:
                     self.error_text.setText("L'adresse email ou mot de passe non valide!")
             else:
                 self.error_text.setText("Format d'adresse email non valide!")
+
+    def showEvent(self, event):
+        self.pass_input.setText("")
+        return super().showEvent(event)
 
     def __setupUi(self):
         if self.objectName():

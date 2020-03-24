@@ -12,12 +12,15 @@ from PyQt5.QtWidgets import *
 from UI.add_event_dialog import Ui_add_event_dialog
 from UI.info_event_dialog import Ui_info_event_dialog
 
+from pathlib import Path
 from PIL import Image, ImageOps
+
 from Models.evenement import Status
 
 class Scheduler(QCalendarWidget):
     def __init__(self, parent=None, events=[]):
         super().__init__(parent)
+        self.setGridVisible(True)
         self.__events = events
 
     def update_events(self, new_events):
@@ -99,9 +102,10 @@ class Ui_AdminWindow(QMainWindow):
         Cette fonction permet d'afficher toutes les évènements
         """
         self.eventsListWidget.clear()
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        for i, e in enumerate(self.__all_events):
-            icon_name = dir_path+"/events_icons/event%d.png" % i
+        for e in self.__all_events:
+            Path("UI/events_icons").mkdir(parents=True, exist_ok=True)
+            icon_name = "UI/events_icons/event_%d.png" % e.id
+            print(e.color)
             self.__draw_image(icon_name, (10, 10), e.color)
             icon = QIcon(icon_name)
 
@@ -132,12 +136,13 @@ class Ui_AdminWindow(QMainWindow):
                 self.eventsListWidget.addItem(item)
 
     def __draw_image(self, file_path, dimension, color):
-        if isinstance(dimension, tuple):
-            img = Image.new('RGB', dimension, color=color)
-            img.save(file_path)
-            self.__add_border(file_path, file_path, 1)
-        else:
-            raise RuntimeError('dimension is not a tuple!')
+        if not Path(file_path).exists():
+            if isinstance(dimension, tuple):
+                img = Image.new('RGB', dimension, color=color)
+                img.save(file_path)
+                self.__add_border(file_path, file_path, 1)
+            else:
+                raise RuntimeError('dimension is not a tuple!')
 
     def __add_border(self, input_image, output_image, border):
         img = Image.open(input_image)
@@ -153,7 +158,6 @@ class Ui_AdminWindow(QMainWindow):
         if self.objectName():
             self.setObjectName(u"AdminWindow")
         self.resize(530, 569)
-        dir_path = os.path.dirname(os.path.realpath(__file__))
         self.setStyleSheet(open("UI/styles/base_style.css", "r").read())
         self.centralwidget = QWidget(self)
         self.centralwidget.setObjectName(u"centralwidget")

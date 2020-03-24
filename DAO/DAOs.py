@@ -10,11 +10,46 @@ La liste des DAO:
 from db import DBConnexion
 import sqlite3
 
+from Models.disponibilite import Disponibilite
 from Models.utilisateur import Utilisateur, Metier
 from Models.evenement import Evenement, Status
 from Models.salle import Salle
 from PyQt5.QtCore import QDate, QDateTime, QTime, QTimeZone
 
+def format_date(datetime):
+    return "%02d/%02d/%d %02d:%02d" % (datetime.date().day(), datetime.date().month(), datetime.date().year(), datetime.time().hour(), datetime.time().minute())
+
+def data_to_datetime(data):
+    if data == None:
+        return None
+    date_fin = QDate(int(data[6:10]), int(data[3:5]), int(data[:2]))
+    time_fin = QTime(int(data[11:13]), int(data[15:17]))
+    return QDateTime(date_fin, time_fin)
+
+class DisponibiliteDAO:
+    @staticmethod
+    def get_by_user_id(user_id):
+        """
+        Cette fonction permet de renvoyer la disponbilité de l'utilsateur 'user_id'
+        
+            Parameters:
+                user_id: L'identifiant de l'utilisateur
+            Return:
+                Un objet de type Disponibilite()
+        """
+        dispo = None
+        if user_id != None:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+            query = "SELECT * FROM `USER_DISPONIBILITE` WHERE `ID_USER` = ?"
+            cursor.execute(query, [user_id])
+
+            dispo_data = cursor.fetchone()
+            if dispo_data != None:
+                date_debut = QDateTime(QDateTime.currentDateTime())
+                dispo = Disponibilite(user_id, dispo_data[1], dispo_data[2], format_date(date_debut), data_to_datetime(dispo_data[4]))
+            conn.close()
+        return dispo
 
 class UtilisateurDAO:
    
@@ -34,7 +69,9 @@ class UtilisateurDAO:
         
         rows = cursor.fetchall()
         for row in rows:
-            u = Utilisateur(int(row[0]), row[1], row[2], row[3], row[4], row[5], row[6], int(row[7])==1)
+            user_id = int(row[0]) 
+            dispo = DisponibiliteDAO.get_by_user_id(user_id)
+            u = Utilisateur(user_id, row[1], row[2], row[3], row[4], row[5], row[6], dispo, int(row[8])==1)
             liste.append(u)
         
         conn.close()
@@ -58,7 +95,7 @@ class UtilisateurDAO:
             cursor.execute(query, [id])
             
             user_data = cursor.fetchone()
-            user = Utilisateur(id, user_data[1], user_data[2], user_data[3], user_data[4], user_data[5], user_data[6], int(user_data[7])==1)
+            user = Utilisateur(id, user_data[1], user_data[2], user_data[3], user_data[4], user_data[5], user_data[6], int(user_data[7]), int(user_data[8])==1)
             conn.close()
         return user
     
@@ -78,7 +115,7 @@ class UtilisateurDAO:
         
         rows = cursor.fetchall()
         for row in rows:
-            u = Utilisateur(int(row[0]), row[1], row[2], row[3], row[4], row[5], row[6], int(row[7])==1)
+            u = Utilisateur(int(row[0]), row[1], row[2], row[3], row[4], row[5], row[6], int(row[7]), True)
             liste.append(u)
         
         conn.close()
@@ -102,11 +139,6 @@ class EvenementDAO:
         
         rows = cursor.fetchall()
         for row in rows:
-            date_debut = QDate(int(row[3][6:10]), int(row[3][3:5]), int(row[3][:2]))
-            date_fin = QDate(int(row[4][6:10]), int(row[4][3:5]), int(row[4][:2]))
-            time_debut = QTime(int(row[3][11:13]), int(row[3][15:17]))
-            time_fin = QTime(int(row[4][11:13]), int(row[4][15:17]))
-            
             # Récuperer la salle
             salle_id = int(row[5])
             salle = SalleDAO.get_by_id(salle_id)
@@ -115,7 +147,7 @@ class EvenementDAO:
                 status = Status.EN_COURS
             elif row[8] == 2:
                 status = Status.FINI
-            e = Evenement(int(row[0]), row[1], row[2], QDateTime(date_debut, time_debut), QDateTime(date_fin, time_fin), salle, row[6], row[7], status)
+            e = Evenement(int(row[0]), row[1], row[2], data_to_datetime(row[3]), data_to_datetime(row[4]), salle, row[6], row[7], status)
             # Récuperer la liste des responsables
             query = "SELECT `ID_USER` FROM `EVENT_RESPONSABLE` WHERE `ID_EVENT`=?"
             cursor.execute(query, [int(row[0])])
@@ -140,17 +172,20 @@ class EvenementDAO:
             Parameters:
                 new_event: L'évènement a ajouté
         """
-        def format_date(datetime):
-            return "%02d/%02d/%d %02d:%02d" % (datetime.date().day(), datetime.date().month(), datetime.date().year(), datetime.time().hour(), datetime.time().minute())
-            
         try:
             conn = DBConnexion().Instance
             cursor = conn.cursor()
 
             # Ajouter l'évènement
-            query_add_event = "INSERT INTO `EVENT` VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)"
-            print(Status.DISPONIBLE)
-            cursor.execute(query_add_event, (new_event.nom, new_event.description, format_date(new_event.date_debut), format_date(new_event.date_fin), new_event.salle.id, new_event.color.name(), 0, Status.DISPONIBLE))
+            print("Attempt add event")
+            query_add_event = "INSERT INTO `EVENT` VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 0)"
+            cursor.execute(query_add_event, (new_event.nom, 
+                                             new_event.description, 
+                                             format_date(new_event.date_debut), 
+                                             format_date(new_event.date_fin), 
+                                             new_event.salle.id, 
+                                             new_event.color.name(), 
+                                             int(new_event.est_projection)))
             event_id = cursor.lastrowid
             
             # Ajouter les responsables
@@ -159,7 +194,7 @@ class EvenementDAO:
             for r in new_event.responsables:
                 # Ajouter la liaison du responsable avec l'évèenement à la base de donnée 
                 responsables_data.append((event_id, r.id))
-            
+            print("Attempt add responsables")
             cursor.executemany(query_add_responsable, responsables_data)
             
             # Si l'évènement est une projection alors ajouter la projection à la base de donéee
@@ -183,7 +218,13 @@ class EvenementDAO:
                 
                 # Ajouter la projection
                 query_add_projection = "INSERT INTO `PROJECTION` VALUES (NULL, ?, ?, ?, ?, ?)"
-                cursor.execute(query_add_projection, (event_id, new_event.presentationAuteur.auteur, new_event.presentationAuteur.duree, new_event.contexte, debat_id))
+                auteur = None
+                duree = None
+                if new_event.presentationAuteur != None:
+                    auteur = new_event.presentationAuteur.auteur
+                if new_event.presentationAuteur != None:
+                    duree = new_event.presentationAuteur.duree
+                cursor.execute(query_add_projection, (event_id, auteur, duree, new_event.contexte, debat_id))
 
             conn.commit()
             conn.close()

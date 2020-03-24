@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import *
 from UI.info_salle_dialog import Ui_info_salle_dialog
 
 class Ui_info_event_dialog(QDialog):
-    def __init__(self, parent, f, evenement):
+    def __init__(self, parent, f=Qt.WindowFlags(), evenement=None):
         super().__init__(parent, f)
         self.__setupUi()
         

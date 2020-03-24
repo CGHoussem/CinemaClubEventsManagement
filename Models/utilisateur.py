@@ -9,10 +9,8 @@ class Metier(Enum):
     TECHNICIEN = 6
     AUTRE = 7
 
-
 class Utilisateur:
-    def __init__(self, id, email, mdp, nom, prenom, adresse, metier, est_admin=False):
-        super().__init__()
+    def __init__(self, id, email, mdp, nom, prenom, adresse, metier, disponibilite=None, est_admin=False):
         self.__id = id
         self.__email = email
         self.__motdepasse = mdp
@@ -30,6 +28,7 @@ class Utilisateur:
             self.__metier = Metier.CRITIQUE
         elif metier == "Metier.TECHNICIEN":
             self.__metier = Metier.TECHNICIEN
+        self.__disponibilite = disponibilite
         self.__est_admin = est_admin
 
     @property
@@ -59,6 +58,10 @@ class Utilisateur:
     @property
     def prenom(self):
         return self.__prenom
+
+    @property
+    def disponibilite(self):
+        return self.__disponibilite
     
     @property
     def admin(self):
