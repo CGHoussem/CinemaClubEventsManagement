@@ -15,7 +15,7 @@ from UI.info_event_dialog import Ui_info_event_dialog
 from pathlib import Path
 from PIL import Image, ImageOps
 
-from Models.evenement import Status
+from Models.evenement import Etat
 
 class Scheduler(QCalendarWidget):
     def __init__(self, parent=None, events=[]):
@@ -105,16 +105,15 @@ class Ui_AdminWindow(QMainWindow):
         for e in self.__all_events:
             Path("UI/events_icons").mkdir(parents=True, exist_ok=True)
             icon_name = "UI/events_icons/event_%d.png" % e.id
-            print(e.color)
             self.__draw_image(icon_name, (10, 10), e.color)
             icon = QIcon(icon_name)
 
             item = QListWidgetItem(icon, str(e))
-            if e.status == Status.EN_ATTENTE:
+            if e.etat == Etat.EN_ATTENTE:
                 item.setBackground(QColor("#FF4B3C"))
-            if e.status == Status.EN_COURS:
+            if e.etat == Etat.EN_COURS:
                 item.setBackground(QColor("#FFCD42"))
-            if e.status == Status.FINI:
+            if e.etat == Etat.TERMINE:
                 item.setBackground(QColor("#12D11C"))
             self.eventsListWidget.addItem(item)
 

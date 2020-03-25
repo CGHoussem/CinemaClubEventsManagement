@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import *
 
 from DAO.DAOs import EvenementDAO
 from Models.disponibilite import Statut
-from Models.evenement import Status
+from Models.evenement import Etat
 from PIL import Image, ImageOps
 from UI.info_event_dialog import Ui_info_event_dialog
 
@@ -51,7 +51,6 @@ class Ui_MemberWindow(QMainWindow):
         self.__setupUi()
         
         # Connect signals
-        self.status_details_btn.clicked.connect(self.__open_status_details_dialog)
         self.profile_btn.clicked.connect(self.__open_profile_dialog)
         self.disconnect_btn.clicked.connect(self.__disconnect)
         self.events_list_widget.itemDoubleClicked.connect(self.__open_event_dialog)
@@ -63,16 +62,7 @@ class Ui_MemberWindow(QMainWindow):
         indexes = self.events_list_widget.selectedIndexes()
         if len(indexes) > 0:
             # TODO add is_member attribute to the dialog window and change the UI depending on that attribute
-            dialog = Ui_info_event_dialog(self, Qt.WindowFlags(), self.__member_events[indexes[0].row()])
-            dialog.show()
-    
-    # TODO open status details dialog
-    @pyqtSlot()
-    def __open_status_details_dialog(self):
-        """
-        Cette fonction permet d'ouvrir la dialog de détails du status
-        """
-        pass
+            Ui_info_event_dialog(self, Qt.WindowFlags(), self.__member_events[indexes[0].row()], is_member=True).show()
     
     # TODO open profile dialog
     @pyqtSlot()
@@ -89,23 +79,25 @@ class Ui_MemberWindow(QMainWindow):
         """
         self.close()
         self.__parent.show()
-
+    
     def __inject(self):
         """
-        Cette fonction permet d'injecter les attributs de l'utilisateur  à l'interface graphique
+        Cette fonction permet d'injecter les attributs de l'utilisateur à l'interface graphique
         """
         self.nom_prenom_value.setText(self.__member.nom.upper() + " "+ self.__member.prenom)
-
-        if self.__member.disponibilite.statut == Statut.DISPONIBLE:
-            self.status_details_btn.hide()
         
+        if self.__member.disponibilite.statut == Statut.DISPONIBLE:
+            self.status_value.setStyleSheet("color: #12D11C")
+        else:
+            self.status_value.setStyleSheet("color: #FFCD42")
         self.status_value.setText(str(self.__member.disponibilite))
+        
         
         # Get all events related to the user
         self.events_list_widget.clear()
         for e in self.__member_events:
             self.events_list_widget.addItem(self.__get_item(e))
-    
+
     def __get_item(self, event):
         """
         Cette fonction permet de créer une item pour la liste
@@ -121,11 +113,11 @@ class Ui_MemberWindow(QMainWindow):
         icon = QIcon(icon_name)
 
         item = QListWidgetItem(icon, str(event))
-        if event.status == Status.EN_ATTENTE:
+        if event.etat == Etat.EN_ATTENTE:
             item.setBackground(QColor("#FF4B3C"))
-        if event.status == Status.EN_COURS:
+        if event.etat == Etat.EN_COURS:
             item.setBackground(QColor("#FFCD42"))
-        if event.status == Status.FINI:
+        if event.etat == Etat.TERMINE:
             item.setBackground(QColor("#12D11C"))
         return item
     
@@ -236,12 +228,6 @@ class Ui_MemberWindow(QMainWindow):
 
         self.horizontalLayout.addWidget(self.status_value)
 
-        self.status_details_btn = QPushButton(self.widget)
-        self.status_details_btn.setObjectName(u"status_details_btn")
-
-        self.horizontalLayout.addWidget(self.status_details_btn)
-
-
         self.form_grid.addWidget(self.widget, 1, 1, 1, 1)
 
         self.status_label = QLabel(self.centralwidget)
@@ -277,11 +263,9 @@ class Ui_MemberWindow(QMainWindow):
         self.setStatusBar(self.statusbar)
         #if QT_CONFIG(shortcut)
         self.evenements_label.setBuddy(self.events_list_widget)
-        self.status_value.setBuddy(self.status_details_btn)
         #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.profile_btn, self.disconnect_btn)
-        QWidget.setTabOrder(self.disconnect_btn, self.status_details_btn)
-        QWidget.setTabOrder(self.status_details_btn, self.events_list_widget)
+        QWidget.setTabOrder(self.disconnect_btn, self.events_list_widget)
 
         self.__retranslateUi()
 
@@ -295,7 +279,6 @@ class Ui_MemberWindow(QMainWindow):
         self.nom_prenom_label.setText(QCoreApplication.translate("MemberWindow", u"Membre de la mairie / du club :", None))
         self.evenements_label.setText(QCoreApplication.translate("MemberWindow", u"\u00c9v\u00e8nements associ\u00e9s :", None))
         self.status_value.setText(QCoreApplication.translate("MemberWindow", u"Status", None))
-        self.status_details_btn.setText(QCoreApplication.translate("MemberWindow", u"Plus d'infos", None))
         self.status_label.setText(QCoreApplication.translate("MemberWindow", u"Status :", None))
         self.nom_prenom_value.setText(QCoreApplication.translate("MemberWindow", u"Nom et Pr\u00e9nom", None))
     # retranslateUi

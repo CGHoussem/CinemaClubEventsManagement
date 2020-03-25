@@ -3,13 +3,13 @@ from PyQt5.QtGui import QColor
 
 from enum import Enum
 
-class Status(Enum):
+class Etat(Enum):
     EN_ATTENTE = 0
     EN_COURS = 1
-    FINI = 2
+    TERMINE = 2
 
 class Evenement:
-    def __init__(self, id, nom, description, date_debut, date_fin, salle, color, est_projection=False, status=Status.EN_ATTENTE):
+    def __init__(self, id, nom, description, date_debut, date_fin, salle, color, est_projection=False, etat=Etat.EN_ATTENTE):
         self.__id = id
         self.nom = nom
         self.description = description
@@ -19,7 +19,7 @@ class Evenement:
         self.salle = salle
         self.color = color
         self.est_projection = est_projection
-        self.status = status
+        self.etat = etat
 
     @property
     def id(self):
@@ -38,9 +38,9 @@ class Evenement:
             raise TypeError("Il faut que le responsable a ajouté soit un membre de la mairie ou le club")
 
     def __str__(self):
-        status = "En attente"
-        if self.status == Status.EN_COURS:
-            status = "En cours"
-        elif self.status == Status.FINI:
-            status = "Fini"
-        return "%s (%s)" % (self.nom, status)
+        etat = "En attente"
+        if self.etat == Etat.EN_COURS:
+            etat = "En cours"
+        elif self.etat == Etat.TERMINE:
+            etat = "Termine"
+        return "%s (%s)" % (self.nom, etat.upper())

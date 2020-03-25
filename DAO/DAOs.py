@@ -7,13 +7,15 @@ La liste des DAO:
     - SalleDAO
 """
 
-from db import DBConnexion
 import sqlite3
 
+from db import DBConnexion
 from Models.disponibilite import Disponibilite
 from Models.utilisateur import Utilisateur, Metier
-from Models.evenement import Evenement, Status
+from Models.evenement import Evenement, Etat
 from Models.salle import Salle
+from Models.reservation_salle import ReservationSalle
+
 from PyQt5.QtCore import QDate, QDateTime, QTime, QTimeZone
 
 def format_date(datetime):
@@ -142,12 +144,12 @@ class EvenementDAO:
             # Récuperer la salle
             salle_id = int(row[5])
             salle = SalleDAO.get_by_id(salle_id)
-            status = Status.EN_ATTENTE
+            etat = Etat.EN_ATTENTE
             if row[8] == 1:
-                status = Status.EN_COURS
+                etat = Etat.EN_COURS
             elif row[8] == 2:
-                status = Status.FINI
-            e = Evenement(int(row[0]), row[1], row[2], data_to_datetime(row[3]), data_to_datetime(row[4]), salle, row[6], row[7], status)
+                etat = Etat.FINI
+            e = Evenement(int(row[0]), row[1], row[2], data_to_datetime(row[3]), data_to_datetime(row[4]), salle, row[6], row[7], etat)
             # Récuperer la liste des responsables
             query = "SELECT `ID_USER` FROM `EVENT_RESPONSABLE` WHERE `ID_EVENT`=?"
             cursor.execute(query, [int(row[0])])
@@ -231,6 +233,29 @@ class EvenementDAO:
         except sqlite3.Error as e:
             print("Error:", str(e))
 
+    @staticmethod
+    def update_state(event):
+        """
+        Cette fonction permet de mettre à jour l'etat un evenement
+        
+            Parameters:
+                event: L'évènement à MAJ
+        """
+        try:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+            query = "UPDATE `EVENT` SET `ETAT` = ? WHERE `ID` = ?"
+            etat = 0
+            if event.etat == Etat.EN_COURS:
+                etat = 1
+            elif event.etat == Etat.TERMINE:
+                etat = 2
+            cursor.execute(query, (etat, event.id))
+            conn.commit()
+            conn.close()
+        except sqlite3.Error as e:
+            print("Error ", e)
+
 class SalleDAO:
        
     @staticmethod
@@ -281,3 +306,110 @@ class SalleDAO:
             
             conn.close()
         return salle
+
+class SalleReservationDAO:
+    
+    @staticmethod
+    def get_by_event(event):
+        """
+        Cette fonction permet de renvoyer la reservation de la salle de l'évènement 'event'
+        
+            Parameters:
+                event: L'évènement
+            Return:
+                Un objet de type ReservationSalle()
+        """
+        reservation = None
+        if event != None and event.id != None:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+            query = "SELECT * FROM `RESERVATION_SALLE` WHERE `EVENT_ID` = ?"
+            cursor.execute(query, [event.id])
+            
+            reservation_data = cursor.fetchone()
+            if reservation_data != None:
+                reservation_id = int(reservation_data[0])
+                salle = SalleDAO.get_by_id(int(reservation_data[2]))
+                debut_datetime = data_to_datetime(reservation_data[3])
+                fin_datetime = data_to_datetime(reservation_data[4])
+                reservation = ReservationSalle(reservation_id, event, salle, debut_datetime, fin_datetime)
+                
+            conn.close()
+        return reservation
+
+    @staticmethod
+    def get_by_salle(salle):
+        """
+        Cette fonction permet de renvoyer la reservation de la salle 'salle'
+        
+            Parameters:
+                salle: La salle
+            Return:
+                Un objet de type ReservationSalle()
+        """
+        reservations = []
+        if salle.id != None:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+            query = "SELECT * FROM `RESERVATION_SALLE` WHERE `SALLE_ID` = ?"
+            cursor.execute(query, [salle.id])
+            
+            reservation_datas = cursor.fetchall()
+            for reservation_data in reservation_datas:
+                reservation_id = int(reservation_data[0])
+                debut_datetime = data_to_datetime(reservation_data[3])
+                fin_datetime = data_to_datetime(reservation_data[4])
+                reservation = ReservationSalle(reservation_id, None, salle, debut_datetime, fin_datetime)
+                reservations.append(reservation)
+                
+            conn.close()
+        return reservations
+    
+    @staticmethod
+    def est_event_salle_reserve(event):
+        """
+        Cette fonction permet de renvoyer si la salle de l'évènement est réserver ou pas
+        
+            Parameters:
+                event: L'évènement
+            Return:
+                une valeur booléene
+        """
+        est_resever = False
+        if event != None and event.id != None:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+            query = "SELECT * FROM `RESERVATION_SALLE` WHERE `EVENT_ID` = ?"
+            cursor.execute(query, [event.id])
+            
+            existe = cursor.fetchone()
+            est_reserver = (existe != None)
+                
+            conn.close()
+        return est_reserver
+    
+    @staticmethod
+    def add_reservation(reservation):
+        """
+        Cette fonction permet d'ajouter une réservation d'une salle dans la base de donnée 
+        
+            Parameters:
+                reservation: La réservation a ajoutée
+        """
+        try:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+
+            # Ajouter l'évènement
+            query_add_event = "INSERT INTO `RESERVATION_SALLE` VALUES (NULL, ?, ?, ?, ?)"
+            cursor.execute(query_add_event, (reservation.event.id,
+                                             reservation.salle.id,
+                                             format_date(reservation.debut_datetime),
+                                             format_date(reservation.fin_datetime)))
+            
+            conn.commit()
+            conn.close()
+        except sqlite3.Error as e:
+            print("Error:", str(e))
+
+
