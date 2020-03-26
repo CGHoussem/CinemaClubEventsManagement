@@ -11,4 +11,4 @@ class Projection(Evenement):
         self.debat = debat
 
     def __str__(self):
-        return super().__str__() + " [projetion]"
+        return super().__str__() + " [projection]"

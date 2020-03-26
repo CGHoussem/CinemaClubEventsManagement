@@ -9,12 +9,13 @@
 ################################################################################
 
 from PyQt5.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint,
-    QRect, QSize, QUrl, Qt)
+    QRect, QSize, QUrl, Qt, pyqtSlot)
 from PyQt5.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
     QFontDatabase, QIcon, QLinearGradient, QPalette, QPainter, QPixmap,
     QRadialGradient)
 from PyQt5.QtWidgets import *
 
+from UI.info_user_dialog import Ui_info_user_dialog
 
 class Ui_info_salle_dialog(QDialog):
     def __init__(self, parent, f, salle):
@@ -24,9 +25,13 @@ class Ui_info_salle_dialog(QDialog):
         self.__setupUi()
 
         # connect signals
-        self.responsable_info_btn.clicked.connect(lambda e: print("Open responsable dialog"))
+        self.responsable_info_btn.clicked.connect(self.__ouvrir_responsable_dialog)
 
         self.__inject()
+
+    @pyqtSlot()
+    def __ouvrir_responsable_dialog(self):
+        Ui_info_user_dialog(self, self.__salle.responsable).show()
 
     def __inject(self):
         self.nom_salle_value.setText("Salle %d" % self.__salle.id)

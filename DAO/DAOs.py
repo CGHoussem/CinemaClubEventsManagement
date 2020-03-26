@@ -14,7 +14,10 @@ from Models.disponibilite import Disponibilite
 from Models.utilisateur import Utilisateur, Metier
 from Models.evenement import Evenement, Etat
 from Models.salle import Salle
+from Models.projection import Projection
 from Models.reservation_salle import ReservationSalle
+from Models.debat import Debat
+from Models.presentation import PresentationAuteur
 
 from PyQt5.QtCore import QDate, QDateTime, QTime, QTimeZone
 
@@ -97,7 +100,8 @@ class UtilisateurDAO:
             cursor.execute(query, [id])
             
             user_data = cursor.fetchone()
-            user = Utilisateur(id, user_data[1], user_data[2], user_data[3], user_data[4], user_data[5], user_data[6], int(user_data[7]), int(user_data[8])==1)
+            dispo = DisponibiliteDAO.get_by_user_id(id)
+            user = Utilisateur(id, user_data[1], user_data[2], user_data[3], user_data[4], user_data[5], user_data[6], dispo, int(user_data[8])==1)
             conn.close()
         return user
     
@@ -123,6 +127,77 @@ class UtilisateurDAO:
         conn.close()
         return liste
 
+class DebatDAO:
+    @staticmethod
+    def get_by_id(debat_id):
+        """
+        Cette fonction permet de renvoyer le debat d'identifiant 'debat_id'
+        
+            Parameters:
+                debat_id: l'identifiant du debat
+            Return:
+                Un objet de type Debat()
+        """
+        debat = None
+        if debat_id != None:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+            query = "SELECT * FROM `DEBAT` WHERE `ID` = ?"
+            cursor.execute(query, [debat_id])
+            
+            debat_data = cursor.fetchone()
+            
+            animateur_id = int(debat_data[1])
+            animateur = UtilisateurDAO.get_by_id(animateur_id)
+            duree = debat_data[2]
+            notes = debat_data[3]
+            
+            debat = Debat(debat_id, animateur, duree, notes)
+            
+            conn.close()
+        return debat
+
+class ProjectionDAO:
+    @staticmethod
+    def get_by_id(event_id, event_data, salle):
+        """
+        Cette fonction permet de renvoyer la projection d'identifiant 'event_id'
+        
+            Parameters:
+                event_id: l'identifiant de le l'évènement (projection)
+            Return:
+                Un objet de type Projection()
+        """
+        projection = None
+        if event_id != None:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+            query = "SELECT * FROM `PROJECTION` WHERE `EVENT_ID` = ?"
+            cursor.execute(query, [event_id])
+            projection_data = cursor.fetchone()
+            
+            projection_auteur = None
+            if projection_data[2] != None:
+                projection_auteur = PresentationAuteur(projection_data[2], projection_data[3])
+
+            debat = None
+            if projection_data[5] != None:
+                debat_id = int(projection_data[5])
+                debat = DebatDAO.get_by_id(debat_id)
+
+            projection = Projection(event_id, 
+                                    nom=event_data[1], 
+                                    description=event_data[2], 
+                                    date_debut=data_to_datetime(event_data[3]), 
+                                    date_fin=data_to_datetime(event_data[4]), 
+                                    salle=salle, 
+                                    color=event_data[6],
+                                    contexte=projection_data[4], 
+                                    presentationAuteur=projection_auteur,
+                                    debat=debat)
+            conn.close()
+        return projection
+
 class EvenementDAO:
        
     @staticmethod
@@ -131,7 +206,7 @@ class EvenementDAO:
         Cette fonction permet d'obtenir tout les évènements dans la base de donnée 
         
             Return:
-                Liste de Evenement()
+                Liste de Evenement() / Projection()
         """
         liste = []
         conn = DBConnexion().Instance
@@ -141,18 +216,26 @@ class EvenementDAO:
         
         rows = cursor.fetchall()
         for row in rows:
+            event_id = int(row[0])
             # Récuperer la salle
             salle_id = int(row[5])
             salle = SalleDAO.get_by_id(salle_id)
             etat = Etat.EN_ATTENTE
-            if row[8] == 1:
+            if int(row[8]) == 1:
                 etat = Etat.EN_COURS
-            elif row[8] == 2:
-                etat = Etat.FINI
-            e = Evenement(int(row[0]), row[1], row[2], data_to_datetime(row[3]), data_to_datetime(row[4]), salle, row[6], row[7], etat)
+            elif int(row[8]) == 2:
+                etat = Etat.TERMINE
+            if int(row[7]) == 1:
+                # creer une projection
+                e = ProjectionDAO.get_by_id(event_id, row, salle)
+                e.etat = etat
+            else:
+                # creer une evenement
+                e = Evenement(event_id, row[1], row[2], data_to_datetime(row[3]), data_to_datetime(row[4]), salle, row[6], int(row[7])==1, etat)
+                
             # Récuperer la liste des responsables
             query = "SELECT `ID_USER` FROM `EVENT_RESPONSABLE` WHERE `ID_EVENT`=?"
-            cursor.execute(query, [int(row[0])])
+            cursor.execute(query, [event_id])
             
             rows_event_responsable = cursor.fetchall()
             for row_event_responsable in rows_event_responsable:

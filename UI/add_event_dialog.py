@@ -421,7 +421,6 @@ class Ui_add_event_dialog(QDialog):
         
         if ret == 1:
             if self.__animateur != None or (not self.__animateur.nom+self.____animateur.prenom == dialog.potential_new_animateur.nom+dialog.potential_new_animateur.prenom):
-                print("Add", dialog.potential_new_animateur)
                 self.__animateur = dialog.potential_new_animateur
                 self.animateur_list.addItem(str(self.__animateur))
             else:

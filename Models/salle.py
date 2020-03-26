@@ -2,8 +2,6 @@
 Ce module contient la classe de la salle (Salle)
 """
 
-
-
 class Salle:
     def __init__(self, id, adresse, responsable, nbrPlaceTotal):
         self.__id = id

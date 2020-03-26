@@ -44,7 +44,6 @@ class Ui_AdminWindow(QMainWindow):
         
         # Initialiazing members
         self.filtre_date_edit.setDate(QDate.currentDate())
-        
         self.__afficher_all_evenements()
         
         # connect signals
@@ -66,7 +65,7 @@ class Ui_AdminWindow(QMainWindow):
         """
         indexes = self.eventsListWidget.selectedIndexes()
         if len(indexes) > 0:
-            dialog = Ui_info_event_dialog(self, Qt.WindowFlags(), self.__all_events[indexes[0].row()])
+            dialog = Ui_info_event_dialog(self, self.__all_events[indexes[0].row()])
             dialog.show()
 
     @pyqtSlot()

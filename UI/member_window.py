@@ -9,11 +9,13 @@ from PyQt5.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
     QRadialGradient)
 from PyQt5.QtWidgets import *
 
+from UI.info_event_dialog import Ui_info_event_dialog
+from UI.info_user_dialog import Ui_info_user_dialog
+
 from DAO.DAOs import EvenementDAO
 from Models.disponibilite import Statut
 from Models.evenement import Etat
 from PIL import Image, ImageOps
-from UI.info_event_dialog import Ui_info_event_dialog
 
 
 class PicButton(QAbstractButton):
@@ -57,20 +59,33 @@ class Ui_MemberWindow(QMainWindow):
         
         self.__inject()
     
+    def __refresh_list(self):
+        self.__member_events.clear()
+        events = EvenementDAO.get_all()
+        for e in events:
+            for r in e.responsables:
+                if r.id == self.__member.id:
+                    self.__member_events.append(e)
+
+        self.events_list_widget.clear()
+        for e in self.__member_events:
+            self.events_list_widget.addItem(self.__get_item(e))
+    
     @pyqtSlot()
     def __open_event_dialog(self):
         indexes = self.events_list_widget.selectedIndexes()
         if len(indexes) > 0:
             # TODO add is_member attribute to the dialog window and change the UI depending on that attribute
-            Ui_info_event_dialog(self, Qt.WindowFlags(), self.__member_events[indexes[0].row()], is_member=True).show()
+            dialog = Ui_info_event_dialog(self, self.__member_events[indexes[0].row()], is_member=True)
+            dialog.exec_()
+            self.__refresh_list()
     
-    # TODO open profile dialog
     @pyqtSlot()
     def __open_profile_dialog(self):
         """
         Cette fonction permet d'ouvrir la dialog du profile de l'utilisateur
         """
-        pass
+        Ui_info_user_dialog(self, self.__member).show()
     
     @pyqtSlot()
     def __disconnect(self):
@@ -91,8 +106,7 @@ class Ui_MemberWindow(QMainWindow):
         else:
             self.status_value.setStyleSheet("color: #FFCD42")
         self.status_value.setText(str(self.__member.disponibilite))
-        
-        
+
         # Get all events related to the user
         self.events_list_widget.clear()
         for e in self.__member_events:

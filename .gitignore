@@ -1,4 +1,5 @@
 .vscode
 __pycache__
 UI/output.py
-events_icons/
+UI/events_icons/
+UI/UIs/

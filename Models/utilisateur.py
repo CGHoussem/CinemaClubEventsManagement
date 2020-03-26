@@ -52,6 +52,23 @@ class Utilisateur:
         return self.__metier
     
     @property
+    def metier_str(self):
+        if self.__metier == Metier.MEMBRE_MAIRIE:
+            return "Membre de la mairie"
+        elif self.__metier == Metier.MEMBRE_CLUB:
+            return "Membre du club"
+        elif self.__metier == Metier.REPONSABLE_SALLE:
+            return "Responsable d'une salle"
+        elif self.__metier == Metier.ARTISTE:
+            return "Artiste"
+        elif self.__metier == Metier.CRITIQUE:
+            return "Critique"
+        elif self.__metier == Metier.TECHNICIEN:
+            return "Technicien"
+        else:
+            return "Inconnue"
+
+    @property
     def nom(self):
         return self.__nom
     
