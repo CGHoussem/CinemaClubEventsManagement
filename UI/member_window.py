@@ -75,8 +75,7 @@ class Ui_MemberWindow(QMainWindow):
     def __open_event_dialog(self):
         indexes = self.events_list_widget.selectedIndexes()
         if len(indexes) > 0:
-            # TODO add is_member attribute to the dialog window and change the UI depending on that attribute
-            dialog = Ui_info_event_dialog(self, self.__member_events[indexes[0].row()], is_member=True)
+            dialog = Ui_info_event_dialog(self, self.__member_events[indexes[0].row()])
             dialog.exec_()
             self.__refresh_list()
     

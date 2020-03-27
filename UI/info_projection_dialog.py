@@ -6,6 +6,7 @@ from PyQt5.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
     QFontDatabase, QIcon, QLinearGradient, QPalette, QPainter, QPixmap,
     QRadialGradient)
 from PyQt5.QtWidgets import *
+from UI.info_user_dialog import Ui_info_user_dialog
 
 
 class Ui_info_projection_dialog(QDialog):
@@ -32,9 +33,17 @@ class Ui_info_projection_dialog(QDialog):
         """
         Cette fonction permet de connecter les signaux des widgets
         """
-        # TODO info_animateur_dialog
-        self.animateur_debat_btn.clicked.connect(lambda: print("Ouvrir la dialog info_animateur"))
+        self.animateur_debat_btn.clicked.connect(self.__ouvrir_animateur_dialog)
         self.valider_debat_btn.clicked.connect(self.__valider_debat)
+    
+    @pyqtSlot()
+    def __ouvrir_animateur_dialog(self):
+        """
+        Cette fonction permet d'ouvrir la dialog de l'animateur
+        """
+        if self.__projection.debat != None:
+            Ui_info_user_dialog(self, self.__projection.debat.animateur).show()
+        pass
     
     def __inject(self):
         """

@@ -15,7 +15,6 @@ from Models.utilisateur import Utilisateur, Metier
 from Models.evenement import Evenement, Etat
 from Models.salle import Salle
 from Models.projection import Projection
-from Models.reservation_salle import ReservationSalle
 from Models.debat import Debat
 from Models.presentation import PresentationAuteur
 
@@ -158,6 +157,36 @@ class DebatDAO:
         return debat
 
 class ProjectionDAO:
+    
+    @staticmethod
+    def add_projection(projection, event_id, debat_id):
+        """
+        Cette fonction permet d'ajouter une projection dans la base de donnée 
+        
+            Parameters:
+                - projection: La projection a ajoutée
+                - event_id: L'identifiant de l'évenement
+                - debat_id: L'identifiant du debat
+        """
+        try:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+            query_add_projection = "INSERT INTO `PROJECTION` VALUES (NULL, ?, ?, ?, ?, ?)"
+            
+            auteur = None
+            duree = None
+            if projection.presentationAuteur != None:
+                auteur = projection.presentationAuteur.auteur
+            if projection.presentationAuteur != None:
+                duree = projection.presentationAuteur.duree
+
+            cursor.execute(query_add_projection, (event_id, auteur, duree, projection.contexte, debat_id))
+
+            conn.commit()
+            conn.close()
+        except sqlite3.Error as e:
+            print("Error:", str(e))
+    
     @staticmethod
     def get_by_id(event_id, event_data, salle):
         """
@@ -194,12 +223,52 @@ class ProjectionDAO:
                                     color=event_data[6],
                                     contexte=projection_data[4], 
                                     presentationAuteur=projection_auteur,
-                                    debat=debat)
+                                    debat=debat,
+                                    amuses_bouches=int(projection_data[6])==1)
+            projection.salle_reservee = int(event_data[9])==1
+            projection.disponibilite_invites = int(event_data[10])==1
+
             conn.close()
         return projection
 
+    @staticmethod
+    def update_projection(projection):
+        """
+        Cette fonction permet de mettre à jour une projection
+        
+            Parameters:
+                projection: La projection à MAJ
+        """
+        try:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+            query = """UPDATE `PROJECTION` SET 
+                `AUTEUR`=?,
+                `DUREE_PRESENTATION_AUTEUR`=?,
+                `CONTEXTE`=?,
+                `AMUSES_BOUCHES`=? WHERE `ID` = ?"""
+            
+            auteur = None
+            duree = None
+            amuses_bouches = 0
+            if projection.presentationAuteur != None:
+                auteur = projection.presentationAuteur.auteur
+            if projection.presentationAuteur != None:
+                duree = projection.presentationAuteur.duree
+            if projection.amuses_bouches:
+                amuses_bouches = 1
+
+            cursor.execute(query, (auteur, 
+                                   duree,
+                                   projection.contexte,
+                                   amuses_bouches,
+                                   projection.id))
+            conn.commit()
+            conn.close()
+        except sqlite3.Error as e:
+            print("update_projection Error ", e)
+
 class EvenementDAO:
-       
     @staticmethod
     def get_all():
         """
@@ -231,7 +300,7 @@ class EvenementDAO:
                 e.etat = etat
             else:
                 # creer une evenement
-                e = Evenement(event_id, row[1], row[2], data_to_datetime(row[3]), data_to_datetime(row[4]), salle, row[6], int(row[7])==1, etat)
+                e = Evenement(event_id, row[1], row[2], data_to_datetime(row[3]), data_to_datetime(row[4]), salle, row[6], int(row[7])==1, etat, int(row[9])==1, int(row[10])==1)
                 
             # Récuperer la liste des responsables
             query = "SELECT `ID_USER` FROM `EVENT_RESPONSABLE` WHERE `ID_EVENT`=?"
@@ -262,7 +331,6 @@ class EvenementDAO:
             cursor = conn.cursor()
 
             # Ajouter l'évènement
-            print("Attempt add event")
             query_add_event = "INSERT INTO `EVENT` VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 0)"
             cursor.execute(query_add_event, (new_event.nom, 
                                              new_event.description, 
@@ -279,7 +347,6 @@ class EvenementDAO:
             for r in new_event.responsables:
                 # Ajouter la liaison du responsable avec l'évèenement à la base de donnée 
                 responsables_data.append((event_id, r.id))
-            print("Attempt add responsables")
             cursor.executemany(query_add_responsable, responsables_data)
             
             # Si l'évènement est une projection alors ajouter la projection à la base de donéee
@@ -302,19 +369,12 @@ class EvenementDAO:
                     debat_id = cursor.lastrowid
                 
                 # Ajouter la projection
-                query_add_projection = "INSERT INTO `PROJECTION` VALUES (NULL, ?, ?, ?, ?, ?)"
-                auteur = None
-                duree = None
-                if new_event.presentationAuteur != None:
-                    auteur = new_event.presentationAuteur.auteur
-                if new_event.presentationAuteur != None:
-                    duree = new_event.presentationAuteur.duree
-                cursor.execute(query_add_projection, (event_id, auteur, duree, new_event.contexte, debat_id))
+                ProjectionDAO.add_projection(new_event, event_id, debat_id)
 
             conn.commit()
             conn.close()
         except sqlite3.Error as e:
-            print("Error:", str(e))
+            print("add_event Error:", str(e))
 
     @staticmethod
     def update_state(event):
@@ -339,8 +399,61 @@ class EvenementDAO:
         except sqlite3.Error as e:
             print("Error ", e)
 
+    @staticmethod
+    def update_evenement(event):
+        """
+        Cette fonction permet de mettre à jour un evenement
+        
+            Parameters:
+                event: L'évènement à MAJ
+        """
+        try:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+            query = """UPDATE `EVENT` SET 
+                `NOM`=?,
+                `DESCRIPTION`=?,
+                `DATE_DEBUT`=?,
+                `DATE_FIN`=?,
+                `SALLE`=?,
+                `COLOR`=?,
+                `EST_PROJECTION`=?,
+                `ETAT`=?,
+                `RESERVATION_SALLE`=?,
+                `DISPONIBILITE_INVITES`=? WHERE `ID` = ?"""
+            
+            etat = 0
+            if event.etat == Etat.EN_COURS:
+                etat = 1
+            elif event.etat == Etat.TERMINE:
+                etat = 2
+            
+            est_projection = 0
+            if event.est_projection:
+                est_projection = 1
+            salle_reservee = 0
+            if event.salle_reservee:
+                salle_reservee = 1
+            disponibilite_invites = 0
+            if event.disponibilite_invites:
+                disponibilite_invites = 1
+            cursor.execute(query, (event.nom, 
+                                   event.description,
+                                   format_date(event.date_debut),
+                                   format_date(event.date_fin),
+                                   event.salle.id,
+                                   event.color,
+                                   est_projection,
+                                   etat,
+                                   salle_reservee,
+                                   disponibilite_invites,
+                                   event.id))
+            conn.commit()
+            conn.close()
+        except sqlite3.Error as e:
+            print("Error ", e)
+
 class SalleDAO:
-       
     @staticmethod
     def get_all():
         """
@@ -389,110 +502,3 @@ class SalleDAO:
             
             conn.close()
         return salle
-
-class SalleReservationDAO:
-    
-    @staticmethod
-    def get_by_event(event):
-        """
-        Cette fonction permet de renvoyer la reservation de la salle de l'évènement 'event'
-        
-            Parameters:
-                event: L'évènement
-            Return:
-                Un objet de type ReservationSalle()
-        """
-        reservation = None
-        if event != None and event.id != None:
-            conn = DBConnexion().Instance
-            cursor = conn.cursor()
-            query = "SELECT * FROM `RESERVATION_SALLE` WHERE `EVENT_ID` = ?"
-            cursor.execute(query, [event.id])
-            
-            reservation_data = cursor.fetchone()
-            if reservation_data != None:
-                reservation_id = int(reservation_data[0])
-                salle = SalleDAO.get_by_id(int(reservation_data[2]))
-                debut_datetime = data_to_datetime(reservation_data[3])
-                fin_datetime = data_to_datetime(reservation_data[4])
-                reservation = ReservationSalle(reservation_id, event, salle, debut_datetime, fin_datetime)
-                
-            conn.close()
-        return reservation
-
-    @staticmethod
-    def get_by_salle(salle):
-        """
-        Cette fonction permet de renvoyer la reservation de la salle 'salle'
-        
-            Parameters:
-                salle: La salle
-            Return:
-                Un objet de type ReservationSalle()
-        """
-        reservations = []
-        if salle.id != None:
-            conn = DBConnexion().Instance
-            cursor = conn.cursor()
-            query = "SELECT * FROM `RESERVATION_SALLE` WHERE `SALLE_ID` = ?"
-            cursor.execute(query, [salle.id])
-            
-            reservation_datas = cursor.fetchall()
-            for reservation_data in reservation_datas:
-                reservation_id = int(reservation_data[0])
-                debut_datetime = data_to_datetime(reservation_data[3])
-                fin_datetime = data_to_datetime(reservation_data[4])
-                reservation = ReservationSalle(reservation_id, None, salle, debut_datetime, fin_datetime)
-                reservations.append(reservation)
-                
-            conn.close()
-        return reservations
-    
-    @staticmethod
-    def est_event_salle_reserve(event):
-        """
-        Cette fonction permet de renvoyer si la salle de l'évènement est réserver ou pas
-        
-            Parameters:
-                event: L'évènement
-            Return:
-                une valeur booléene
-        """
-        est_resever = False
-        if event != None and event.id != None:
-            conn = DBConnexion().Instance
-            cursor = conn.cursor()
-            query = "SELECT * FROM `RESERVATION_SALLE` WHERE `EVENT_ID` = ?"
-            cursor.execute(query, [event.id])
-            
-            existe = cursor.fetchone()
-            est_reserver = (existe != None)
-                
-            conn.close()
-        return est_reserver
-    
-    @staticmethod
-    def add_reservation(reservation):
-        """
-        Cette fonction permet d'ajouter une réservation d'une salle dans la base de donnée 
-        
-            Parameters:
-                reservation: La réservation a ajoutée
-        """
-        try:
-            conn = DBConnexion().Instance
-            cursor = conn.cursor()
-
-            # Ajouter l'évènement
-            query_add_event = "INSERT INTO `RESERVATION_SALLE` VALUES (NULL, ?, ?, ?, ?)"
-            cursor.execute(query_add_event, (reservation.event.id,
-                                             reservation.salle.id,
-                                             format_date(reservation.debut_datetime),
-                                             format_date(reservation.fin_datetime)))
-            
-            conn.commit()
-            conn.close()
-        except sqlite3.Error as e:
-            print("Error:", str(e))
-
-

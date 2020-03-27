@@ -48,7 +48,6 @@ class Ui_AdminWindow(QMainWindow):
         
         # connect signals
         self.addEventBtn.clicked.connect(self.__ouvrir_ajout_evenement_dialog)
-        #self.scheduler.currentPageChanged.connect(self.__afficher_evenements)
         self.eventsListWidget.itemDoubleClicked.connect(self.__ouvrir_evenement_dialog)
         self.reset_filtre_btn.clicked.connect(self.__reset_filter)
         self.filter_btn.clicked.connect(self.__filter_events)
@@ -66,7 +65,9 @@ class Ui_AdminWindow(QMainWindow):
         indexes = self.eventsListWidget.selectedIndexes()
         if len(indexes) > 0:
             dialog = Ui_info_event_dialog(self, self.__all_events[indexes[0].row()])
-            dialog.show()
+            dialog.exec_()
+
+            self.__afficher_all_evenements()
 
     @pyqtSlot()
     def __ouvrir_ajout_evenement_dialog(self):
@@ -100,6 +101,7 @@ class Ui_AdminWindow(QMainWindow):
         """
         Cette fonction permet d'afficher toutes les évènements
         """
+        self.__all_events = EvenementDAO.get_all()
         self.eventsListWidget.clear()
         for e in self.__all_events:
             Path("UI/events_icons").mkdir(parents=True, exist_ok=True)
@@ -131,6 +133,12 @@ class Ui_AdminWindow(QMainWindow):
                 icon = QIcon(icon_name)
                 
                 item = QListWidgetItem(icon, str(e))
+                if e.etat == Etat.EN_ATTENTE:
+                    item.setBackground(QColor("#FF4B3C"))
+                if e.etat == Etat.EN_COURS:
+                    item.setBackground(QColor("#FFCD42"))
+                if e.etat == Etat.TERMINE:
+                    item.setBackground(QColor("#12D11C"))
                 self.eventsListWidget.addItem(item)
 
     def __draw_image(self, file_path, dimension, color):

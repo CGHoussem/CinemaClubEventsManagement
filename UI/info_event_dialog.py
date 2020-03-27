@@ -7,94 +7,89 @@ from PyQt5.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
 from PyQt5.QtWidgets import *
 
 from Models.evenement import Etat
-from Models.reservation_salle import ReservationSalle
 
 from UI.info_salle_dialog import Ui_info_salle_dialog
 from UI.info_projection_dialog import Ui_info_projection_dialog
 
-from DAO.DAOs import EvenementDAO, SalleReservationDAO, ProjectionDAO
+from DAO.DAOs import EvenementDAO, ProjectionDAO
 from UI.info_user_dialog import Ui_info_user_dialog
 
 class Ui_info_event_dialog(QDialog):
-    def __init__(self, parent, evenement=None, is_member=False):
+    def __init__(self, parent, evenement=None):
         super().__init__(parent, Qt.WindowFlags())
         self.__evenement = evenement
-        
-        self.__setupUi()
-
-        self.reserver_salle_btn.setStyleSheet(open("UI/styles/success_button.css").read())
-
-        self.__reservation_salle = SalleReservationDAO.est_event_salle_reserve(self.__evenement)
-        self.__disponibilite_invites = False
-        self.__amuses_bouches_debat = False
-
-        self.prendre_charge_btn.hide()
-
-        self.projection_evenement_btn.setEnabled(self.__evenement.est_projection)
+       
+        self.__reservation_salle = self.__evenement.salle_reservee
+        self.__disponibilite_invites = self.__evenement.disponibilite_invites
+        self.__amuses_bouches_debat = True
         if self.__evenement.est_projection:
-            self.__amuses_bouches_debat = (self.__evenement.debat == None)
-            self.projection_evenement_btn.setText("Cette évènement est une projection. Savoir plus!")
-        else:
-            self.__amuses_bouches_debat = True
-            self.projection_evenement_btn.setText("Cette évènement n'est pas une projection!")
-            self.projection_evenement_btn.setStyleSheet(open("UI/styles/secondary_button.css").read())
-            self.projection_evenement_btn.setEnabled(False)
-        self.reserver_salle_date_edit.setDateTime(QDateTime.currentDateTime())
+            if self.__evenement.debat != None:
+                self.__amuses_bouches_debat = self.__evenement.amuses_bouches
 
-        if self.__reservation_salle:
-            self.__salle_reserve_design()
-        # setup signals
-        if is_member:
-            # Prendre en charge button
-            self.prendre_charge_btn.show()
-            if self.__evenement.etat == Etat.EN_ATTENTE:
-                self.prendre_charge_btn.clicked.connect(lambda: self.__change_etat_evenement(Etat.EN_COURS))
-            elif self.__evenement.etat == Etat.EN_COURS:
-                self.prendre_charge_btn.setStyleSheet(open("UI/styles/warning_button.css").read())
-                self.prendre_charge_btn.clicked.connect(lambda: self.__change_etat_evenement(Etat.TERMINE))
-                self.prendre_charge_btn.setText("Valider")
-                self.prendre_charge_btn.setStyleSheet(open("UI/styles/success_button.css").read())
-            else:
-                self.prendre_charge_btn.hide()
-        self.invites_disponiblite_checkbox.stateChanged.connect(self.__disponibilite_invites_state)
-        self.reserver_salle_btn.clicked.connect(self.__reserver_salle)
+        self.__setupUi()
+        self.__setup_signals()
+        self.__check_and_design_validation_button()
+        self.__inject() 
+
+    def __setup_signals(self):
+        """
+        Cette fonction permet de définir les fonctions de signaux des bouttons
+        """
+        if self.__evenement.etat == Etat.EN_ATTENTE:
+            self.prendre_charge_btn.clicked.connect(lambda: self.__change_etat_evenement(Etat.EN_COURS))
+        elif self.__evenement.etat == Etat.EN_COURS:
+            self.prendre_charge_btn.clicked.connect(lambda: self.__change_etat_evenement(Etat.TERMINE))
+        
+        self.invites_disponbile_checkbox.stateChanged.connect(self.__disponibilite_invites_state)
+        self.amuses_bouches_checkbox.stateChanged.connect(self.__amuses_bouches_state)
+        self.reserver_salle_checkbox.stateChanged.connect(self.__reserver_salle_state)
         self.responsable_list_widget.itemDoubleClicked.connect(self.__ouvrir_responsable_dialog)
         self.salle_info_btn.clicked.connect(self.__open_salle_dialog)
         self.projection_evenement_btn.clicked.connect(self.__ouvrir_projection_dialog)
-    
-        self.__inject()
-        self.__check_and_design_validation_button()
-
-    def __salle_reserve_design(self):
-        """
-        Cette fonction permet de changer l'interface utilisateur pour la réservation de la salle
-        """
-        def format_date(datetime):
-            return "%02d/%02d/%d %02d:%02d" % (datetime.date().day(), datetime.date().month(), datetime.date().year(), datetime.time().hour(), datetime.time().minute())
-        reservation = SalleReservationDAO.get_by_event(self.__evenement)
-        self.reserver_salle_date_edit.hide()
-        self.reserver_salle_date_edit_2.hide()
-        self.reserver_salle_btn.setText("La salle est déjà réserver pour %s jusqu'à %s" % (format_date(reservation.debut_datetime), format_date(reservation.fin_datetime)))
-        self.reserver_salle_btn.setEnabled(False)
-        self.reserver_salle_btn.setStyleSheet(open("UI/styles/secondary_button.css").read())
-
-    @pyqtSlot()
-    def __disponibilite_invites_state(self, state):
-        """
-        Cette fonction est une fonction de signal qui permet l'attribution de la variable self.__disponibilite_invites
-        """
-        self.__disponibilite_invites=(state==Qt.Checked)
-        self.__check_and_design_validation_button()
 
     def __check_and_design_validation_button(self):
         """
         Cette fonction permet de colorier la boutton de validation de l'évènement
         """
+        print(self.__reservation_salle, self.__disponibilite_invites, self.__amuses_bouches_debat)
         if self.__reservation_salle and self.__disponibilite_invites and self.__amuses_bouches_debat:
             self.prendre_charge_btn.setStyleSheet(open("UI/styles/success_button.css").read())
-        else:
+            self.prendre_charge_btn.setEnabled(True)
+        elif self.__evenement.etat != Etat.EN_ATTENTE:
             self.prendre_charge_btn.setStyleSheet(open("UI/styles/warning_button.css").read())
+            self.prendre_charge_btn.setEnabled(False)
 
+    @pyqtSlot()
+    def __reserver_salle_state(self):
+        """
+        Cette fonction est une fonction de signal qui permet l'attribution de la variable self.__reserver_salle_state
+        """
+        state = self.reserver_salle_checkbox.checkState()
+        self.__reservation_salle=(state==Qt.Checked)
+        self.__evenement.salle_reservee = self.__reservation_salle
+        EvenementDAO.update_evenement(self.__evenement)
+        self.__check_and_design_validation_button()
+    @pyqtSlot()
+    def __disponibilite_invites_state(self):
+        """
+        Cette fonction est une fonction de signal qui permet l'attribution de la variable self.__disponibilite_invites
+        """
+        state = self.invites_disponbile_checkbox.checkState()
+        self.__disponibilite_invites=(state==Qt.Checked)
+        self.__evenement.disponibilite_invites = self.__disponibilite_invites
+        EvenementDAO.update_evenement(self.__evenement)
+        self.__check_and_design_validation_button()
+    @pyqtSlot()
+    def __amuses_bouches_state(self):
+        """
+        Cette fonction est une fonction de signal qui permet l'attribution de la variable self.__amuses_bouches_state
+        """
+        state = self.amuses_bouches_checkbox.checkState()
+        self.__amuses_bouches_debat=(state==Qt.Checked)
+        self.__evenement.amuses_bouches = self.__amuses_bouches_debat
+        ProjectionDAO.update_projection(self.__evenement)
+        self.__check_and_design_validation_button()
+   
     @pyqtSlot()
     def __ouvrir_responsable_dialog(self):
         """
@@ -113,44 +108,23 @@ class Ui_info_event_dialog(QDialog):
         self.__check_and_design_validation_button()
 
     @pyqtSlot()
-    def __reserver_salle(self):
-        """
-        Cette fonction permet de réserver la salle
-        """
-        # Check if the dates aren't faulty
-        datetime_debut = self.reserver_salle_date_edit.dateTime()
-        datetime_fin = self.reserver_salle_date_edit_2.dateTime()
-        if datetime_debut >= datetime_fin:
-            QMessageBox.warning(self, "Erreur de réservation", "Les dates de réservation ne sont pas correctes!")
-            return
-        
-        # Make the reservation if allowed
-        if not self.__evenement.salle.est_reserver(datetime_debut, datetime_fin):
-            reservation = ReservationSalle(None, self.__evenement, self.__evenement.salle, datetime_debut, datetime_fin)
-            SalleReservationDAO.add_reservation(reservation)
-            self.__salle_reserve_design()
-            self.__reservation_salle = True
-            QMessageBox.information(self, "Réservation de la salle", "La salle a été reserver")
-            self.__check_and_design_validation_button()
-        else:
-            QMessageBox.warning(self, "Erreur de réservation", "La salle est déjà reservé à cette date et heure!")
-
-    @pyqtSlot()
     def __change_etat_evenement(self, etat):
         """
         Cette fonction permet de changer l'etat de l'évènement
         """
-        self.__check_and_design_validation_button()
         if etat == Etat.EN_COURS:
             self.__evenement.etat = etat
             EvenementDAO.update_state(self.__evenement)
             self.prendre_charge_btn.clicked.connect(lambda: self.__change_etat_evenement(Etat.TERMINE))
             self.prendre_charge_btn.setText("Valider")
+            self.__check_and_design_validation_button()
         elif etat == Etat.TERMINE:
             if self.__reservation_salle and self.__disponibilite_invites and self.__amuses_bouches_debat:
                 self.__evenement.etat = etat
                 EvenementDAO.update_state(self.__evenement)
-                self.prendre_charge_btn.hide()
+
+                self.dashboard_page.hide()
+
                 QMessageBox.information(self, "Etat de l'évènement", "L'évènement a été valider et terminer!")
 
     @pyqtSlot()
@@ -159,15 +133,36 @@ class Ui_info_event_dialog(QDialog):
         dialog.show()
 
     def __inject(self):
-        def format_date(datetime):
-            return "%02d/%02d/%d %02d:%02d" % (datetime.date().day(), datetime.date().month(), datetime.date().year(), datetime.time().hour(), datetime.time().minute())
+        if self.__evenement.etat != Etat.TERMINE:
+            if self.__evenement.salle_reservee:
+                self.reserver_salle_checkbox.setCheckState(Qt.Checked)
+            if self.__evenement.disponibilite_invites:
+                self.invites_disponbile_checkbox.setCheckState(Qt.Checked)
+            if self.__evenement.est_projection and self.__evenement.amuses_bouches:
+                self.amuses_bouches_checkbox.setCheckState(Qt.Checked)
+            
+        if self.__evenement.etat == Etat.EN_ATTENTE:
+            self.prendre_charge_btn.setText("Prendre en charge")
+        elif self.__evenement.etat == Etat.EN_COURS:
+            self.prendre_charge_btn.setText("Valider l'évènement")
+        else:
+            self.dashboard_page.hide()
         
+        if self.__evenement.est_projection:
+            self.projection_evenement_btn.setText("Cette évènement est une projection. Savoir plus!")
+            if self.__evenement.debat == None:
+                self.amuses_bouches_label.hide()
+                self.amuses_bouches_checkbox.hide()
+                self.__amuses_bouches_debat = True
+        else:
+            self.projection_evenement_btn.hide()
+            self.amuses_bouches_label.hide()
+            self.amuses_bouches_checkbox.hide()
+
         self.nom_evenement_value.setText(self.__evenement.nom)
         self.description_evenement_value.setText(self.__evenement.description)
         for r in self.__evenement.responsables:
             self.responsable_list_widget.addItem(str(r))
-        self.date_debut_evenement_value.setText(format_date(self.__evenement.date_debut))
-        self.date_fin_evenement_value.setText(format_date(self.__evenement.date_fin))
         self.salle_label_value.setText(str(self.__evenement.salle))
         self.color_evenement_frame.setStyleSheet("background-color: %s" % self.__evenement.color)
 
@@ -208,78 +203,90 @@ class Ui_info_event_dialog(QDialog):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, -29, 638, 591))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 655, 641))
         self.gridLayout_4 = QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_4.setObjectName(u"gridLayout_4")
+        self.toolBox = QToolBox(self.scrollAreaWidgetContents)
+        self.toolBox.setObjectName(u"toolBox")
+        self.info_page = QWidget()
+        self.info_page.setObjectName(u"info_page")
+        self.info_page.setGeometry(QRect(0, 0, 637, 569))
+        self.gridLayout = QGridLayout(self.info_page)
+        self.gridLayout.setObjectName(u"gridLayout")
         self.add_event_layout = QGridLayout()
         self.add_event_layout.setObjectName(u"add_event_layout")
         self.add_event_layout.setSizeConstraint(QLayout.SetDefaultConstraint)
-        self.date_fin_evenement_value = QLabel(self.scrollAreaWidgetContents)
+        self.date_fin_evenement_value = QLabel(self.info_page)
         self.date_fin_evenement_value.setObjectName(u"date_fin_evenement_value")
 
         self.add_event_layout.addWidget(self.date_fin_evenement_value, 5, 1, 1, 1)
 
-        self.nom_evenement_value = QLabel(self.scrollAreaWidgetContents)
-        self.nom_evenement_value.setObjectName(u"nom_evenement_value")
-        self.nom_evenement_value.setStyleSheet(u"font: 14pt \"Arial\";")
+        self.description_evenement_label = QLabel(self.info_page)
+        self.description_evenement_label.setObjectName(u"description_evenement_label")
 
-        self.add_event_layout.addWidget(self.nom_evenement_value, 0, 0, 2, 2)
+        self.add_event_layout.addWidget(self.description_evenement_label, 2, 0, 1, 1, Qt.AlignTop)
 
-        self.color_evenement_frame = QFrame(self.scrollAreaWidgetContents)
-        self.color_evenement_frame.setObjectName(u"color_evenement_frame")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        self.date_debut_evenement_value = QLabel(self.info_page)
+        self.date_debut_evenement_value.setObjectName(u"date_debut_evenement_value")
+
+        self.add_event_layout.addWidget(self.date_debut_evenement_value, 4, 1, 1, 1)
+
+        self.projection_evenement_btn = QPushButton(self.info_page)
+        self.projection_evenement_btn.setObjectName(u"projection_evenement_btn")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.color_evenement_frame.sizePolicy().hasHeightForWidth())
-        self.color_evenement_frame.setSizePolicy(sizePolicy2)
+        sizePolicy2.setHeightForWidth(self.projection_evenement_btn.sizePolicy().hasHeightForWidth())
+        self.projection_evenement_btn.setSizePolicy(sizePolicy2)
+
+        self.add_event_layout.addWidget(self.projection_evenement_btn, 8, 0, 1, 2, Qt.AlignLeft)
+
+        self.salle_label = QLabel(self.info_page)
+        self.salle_label.setObjectName(u"salle_label")
+
+        self.add_event_layout.addWidget(self.salle_label, 6, 0, 1, 1)
+
+        self.date_fin_label = QLabel(self.info_page)
+        self.date_fin_label.setObjectName(u"date_fin_label")
+
+        self.add_event_layout.addWidget(self.date_fin_label, 5, 0, 1, 1)
+
+        self.date_debut_label = QLabel(self.info_page)
+        self.date_debut_label.setObjectName(u"date_debut_label")
+
+        self.add_event_layout.addWidget(self.date_debut_label, 4, 0, 1, 1)
+
+        self.responsables_label = QLabel(self.info_page)
+        self.responsables_label.setObjectName(u"responsables_label")
+
+        self.add_event_layout.addWidget(self.responsables_label, 3, 0, 1, 1)
+
+        self.event_color_label = QLabel(self.info_page)
+        self.event_color_label.setObjectName(u"event_color_label")
+
+        self.add_event_layout.addWidget(self.event_color_label, 7, 0, 1, 1)
+
+        self.color_evenement_frame = QFrame(self.info_page)
+        self.color_evenement_frame.setObjectName(u"color_evenement_frame")
+        sizePolicy3 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.color_evenement_frame.sizePolicy().hasHeightForWidth())
+        self.color_evenement_frame.setSizePolicy(sizePolicy3)
         self.color_evenement_frame.setMinimumSize(QSize(50, 50))
         self.color_evenement_frame.setStyleSheet(u"background-color: rgb(255, 170, 255)")
         self.color_evenement_frame.setFrameShape(QFrame.StyledPanel)
         self.color_evenement_frame.setFrameShadow(QFrame.Raised)
 
-        self.add_event_layout.addWidget(self.color_evenement_frame, 8, 1, 1, 1)
+        self.add_event_layout.addWidget(self.color_evenement_frame, 7, 1, 1, 1)
 
-        self.widget = QWidget(self.scrollAreaWidgetContents)
-        self.widget.setObjectName(u"widget")
-        self.horizontalLayout_2 = QHBoxLayout(self.widget)
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.label = QLabel(self.widget)
-        self.label.setObjectName(u"label")
+        self.nom_evenement_value = QLabel(self.info_page)
+        self.nom_evenement_value.setObjectName(u"nom_evenement_value")
+        self.nom_evenement_value.setStyleSheet(u"font: 14pt \"Arial\";")
 
-        self.horizontalLayout_2.addWidget(self.label)
+        self.add_event_layout.addWidget(self.nom_evenement_value, 0, 0, 2, 2)
 
-        self.reserver_salle_date_edit = QDateTimeEdit(self.widget)
-        self.reserver_salle_date_edit.setObjectName(u"reserver_salle_date_edit")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        sizePolicy3.setHorizontalStretch(0)
-        sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.reserver_salle_date_edit.sizePolicy().hasHeightForWidth())
-        self.reserver_salle_date_edit.setSizePolicy(sizePolicy3)
-
-        self.horizontalLayout_2.addWidget(self.reserver_salle_date_edit)
-
-        self.label_2 = QLabel(self.widget)
-        self.label_2.setObjectName(u"label_2")
-
-        self.horizontalLayout_2.addWidget(self.label_2)
-
-        self.reserver_salle_date_edit_2 = QDateTimeEdit(self.widget)
-        self.reserver_salle_date_edit_2.setObjectName(u"reserver_salle_date_edit_2")
-
-        self.horizontalLayout_2.addWidget(self.reserver_salle_date_edit_2)
-
-        self.reserver_salle_btn = QPushButton(self.widget)
-        self.reserver_salle_btn.setObjectName(u"reserver_salle_btn")
-        sizePolicy3.setHeightForWidth(self.reserver_salle_btn.sizePolicy().hasHeightForWidth())
-        self.reserver_salle_btn.setSizePolicy(sizePolicy3)
-
-        self.horizontalLayout_2.addWidget(self.reserver_salle_btn)
-
-
-        self.add_event_layout.addWidget(self.widget, 7, 1, 1, 1, Qt.AlignLeft)
-
-        self.responsable_list_widget = QListWidget(self.scrollAreaWidgetContents)
+        self.responsable_list_widget = QListWidget(self.info_page)
         self.responsable_list_widget.setObjectName(u"responsable_list_widget")
         sizePolicy1.setHeightForWidth(self.responsable_list_widget.sizePolicy().hasHeightForWidth())
         self.responsable_list_widget.setSizePolicy(sizePolicy1)
@@ -287,37 +294,22 @@ class Ui_info_event_dialog(QDialog):
 
         self.add_event_layout.addWidget(self.responsable_list_widget, 3, 1, 1, 1)
 
-        self.label_3 = QLabel(self.scrollAreaWidgetContents)
-        self.label_3.setObjectName(u"label_3")
-
-        self.add_event_layout.addWidget(self.label_3, 7, 0, 1, 1)
-
-        self.responsables_label = QLabel(self.scrollAreaWidgetContents)
-        self.responsables_label.setObjectName(u"responsables_label")
-
-        self.add_event_layout.addWidget(self.responsables_label, 3, 0, 1, 1)
-
-        self.salle_label = QLabel(self.scrollAreaWidgetContents)
-        self.salle_label.setObjectName(u"salle_label")
-
-        self.add_event_layout.addWidget(self.salle_label, 6, 0, 1, 1)
-
-        self.salle_container = QWidget(self.scrollAreaWidgetContents)
+        self.salle_container = QWidget(self.info_page)
         self.salle_container.setObjectName(u"salle_container")
         self.horizontalLayout = QHBoxLayout(self.salle_container)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.salle_label_value = QLabel(self.salle_container)
         self.salle_label_value.setObjectName(u"salle_label_value")
-        sizePolicy2.setHeightForWidth(self.salle_label_value.sizePolicy().hasHeightForWidth())
-        self.salle_label_value.setSizePolicy(sizePolicy2)
+        sizePolicy3.setHeightForWidth(self.salle_label_value.sizePolicy().hasHeightForWidth())
+        self.salle_label_value.setSizePolicy(sizePolicy3)
 
         self.horizontalLayout.addWidget(self.salle_label_value)
 
         self.salle_info_btn = QPushButton(self.salle_container)
         self.salle_info_btn.setObjectName(u"salle_info_btn")
-        sizePolicy3.setHeightForWidth(self.salle_info_btn.sizePolicy().hasHeightForWidth())
-        self.salle_info_btn.setSizePolicy(sizePolicy3)
+        sizePolicy2.setHeightForWidth(self.salle_info_btn.sizePolicy().hasHeightForWidth())
+        self.salle_info_btn.setSizePolicy(sizePolicy2)
 
         self.horizontalLayout.addWidget(self.salle_info_btn, 0, Qt.AlignLeft)
 
@@ -325,24 +317,7 @@ class Ui_info_event_dialog(QDialog):
 
         self.add_event_layout.addWidget(self.salle_container, 6, 1, 1, 1, Qt.AlignLeft)
 
-        self.date_debut_label = QLabel(self.scrollAreaWidgetContents)
-        self.date_debut_label.setObjectName(u"date_debut_label")
-
-        self.add_event_layout.addWidget(self.date_debut_label, 4, 0, 1, 1)
-
-        self.projection_evenement_btn = QPushButton(self.scrollAreaWidgetContents)
-        self.projection_evenement_btn.setObjectName(u"projection_evenement_btn")
-        sizePolicy3.setHeightForWidth(self.projection_evenement_btn.sizePolicy().hasHeightForWidth())
-        self.projection_evenement_btn.setSizePolicy(sizePolicy3)
-
-        self.add_event_layout.addWidget(self.projection_evenement_btn, 10, 0, 1, 2, Qt.AlignHCenter)
-
-        self.description_evenement_label = QLabel(self.scrollAreaWidgetContents)
-        self.description_evenement_label.setObjectName(u"description_evenement_label")
-
-        self.add_event_layout.addWidget(self.description_evenement_label, 2, 0, 1, 1, Qt.AlignTop)
-
-        self.description_evenement_value = QTextBrowser(self.scrollAreaWidgetContents)
+        self.description_evenement_value = QTextBrowser(self.info_page)
         self.description_evenement_value.setObjectName(u"description_evenement_value")
         sizePolicy1.setHeightForWidth(self.description_evenement_value.sizePolicy().hasHeightForWidth())
         self.description_evenement_value.setSizePolicy(sizePolicy1)
@@ -351,35 +326,61 @@ class Ui_info_event_dialog(QDialog):
 
         self.add_event_layout.addWidget(self.description_evenement_value, 2, 1, 1, 1)
 
-        self.date_debut_evenement_value = QLabel(self.scrollAreaWidgetContents)
-        self.date_debut_evenement_value.setObjectName(u"date_debut_evenement_value")
 
-        self.add_event_layout.addWidget(self.date_debut_evenement_value, 4, 1, 1, 1)
+        self.gridLayout.addLayout(self.add_event_layout, 0, 0, 1, 1)
 
-        self.event_color_label = QLabel(self.scrollAreaWidgetContents)
-        self.event_color_label.setObjectName(u"event_color_label")
+        self.toolBox.addItem(self.info_page, u"Les informations sur l'\u00e9v\u00e8nement")
+        self.dashboard_page = QWidget()
+        self.dashboard_page.setObjectName(u"dashboard_page")
+        self.dashboard_page.setGeometry(QRect(0, 0, 637, 531))
+        self.formLayout = QFormLayout(self.dashboard_page)
+        self.formLayout.setObjectName(u"formLayout")
+        self.reserver_salle_lable = QLabel(self.dashboard_page)
+        self.reserver_salle_lable.setObjectName(u"reserver_salle_lable")
 
-        self.add_event_layout.addWidget(self.event_color_label, 8, 0, 1, 1)
+        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.reserver_salle_lable)
 
-        self.date_fin_label = QLabel(self.scrollAreaWidgetContents)
-        self.date_fin_label.setObjectName(u"date_fin_label")
+        self.reserver_salle_checkbox = QCheckBox(self.dashboard_page)
+        self.reserver_salle_checkbox.setObjectName(u"reserver_salle_checkbox")
 
-        self.add_event_layout.addWidget(self.date_fin_label, 5, 0, 1, 1)
+        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.reserver_salle_checkbox)
 
-        self.invites_disponiblite_checkbox = QCheckBox(self.scrollAreaWidgetContents)
-        self.invites_disponiblite_checkbox.setObjectName(u"invites_disponiblite_checkbox")
+        self.invites_label = QLabel(self.dashboard_page)
+        self.invites_label.setObjectName(u"invites_label")
 
-        self.add_event_layout.addWidget(self.invites_disponiblite_checkbox, 9, 0, 1, 2)
+        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.invites_label)
 
+        self.invites_disponbile_checkbox = QCheckBox(self.dashboard_page)
+        self.invites_disponbile_checkbox.setObjectName(u"invites_disponbile_checkbox")
 
-        self.gridLayout_4.addLayout(self.add_event_layout, 0, 0, 1, 1)
+        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.invites_disponbile_checkbox)
 
-        self.prendre_charge_btn = QPushButton(self.scrollAreaWidgetContents)
+        self.amuses_bouches_label = QLabel(self.dashboard_page)
+        self.amuses_bouches_label.setObjectName(u"amuses_bouches_label")
+
+        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.amuses_bouches_label)
+
+        self.amuses_bouches_checkbox = QCheckBox(self.dashboard_page)
+        self.amuses_bouches_checkbox.setObjectName(u"amuses_bouches_checkbox")
+
+        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.amuses_bouches_checkbox)
+
+        self.gerer_evenement_label = QLabel(self.dashboard_page)
+        self.gerer_evenement_label.setObjectName(u"gerer_evenement_label")
+
+        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.gerer_evenement_label)
+
+        self.prendre_charge_btn = QPushButton(self.dashboard_page)
         self.prendre_charge_btn.setObjectName(u"prendre_charge_btn")
-        sizePolicy3.setHeightForWidth(self.prendre_charge_btn.sizePolicy().hasHeightForWidth())
-        self.prendre_charge_btn.setSizePolicy(sizePolicy3)
+        sizePolicy2.setHeightForWidth(self.prendre_charge_btn.sizePolicy().hasHeightForWidth())
+        self.prendre_charge_btn.setSizePolicy(sizePolicy2)
+        self.prendre_charge_btn.setMinimumSize(QSize(200, 0))
 
-        self.gridLayout_4.addWidget(self.prendre_charge_btn, 1, 0, 1, 1, Qt.AlignHCenter)
+        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.prendre_charge_btn)
+
+        self.toolBox.addItem(self.dashboard_page, u"Les boutons de contr\u00f4le de l'\u00e9v\u00e8nement")
+
+        self.gridLayout_4.addWidget(self.toolBox, 1, 0, 1, 1)
 
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
@@ -392,27 +393,22 @@ class Ui_info_event_dialog(QDialog):
         self.verticalLayout.addWidget(self.buttonBox)
 
         #if QT_CONFIG(shortcut)
-        self.label.setBuddy(self.reserver_salle_date_edit)
-        self.label_2.setBuddy(self.reserver_salle_date_edit_2)
-        self.responsables_label.setBuddy(self.responsable_list_widget)
-        self.salle_label.setBuddy(self.salle_info_btn)
-        self.salle_label_value.setBuddy(self.salle_info_btn)
         self.description_evenement_label.setBuddy(self.description_evenement_value)
+        self.salle_label.setBuddy(self.salle_info_btn)
+        self.responsables_label.setBuddy(self.responsable_list_widget)
+        self.salle_label_value.setBuddy(self.salle_info_btn)
         #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.scrollArea, self.description_evenement_value)
         QWidget.setTabOrder(self.description_evenement_value, self.responsable_list_widget)
         QWidget.setTabOrder(self.responsable_list_widget, self.salle_info_btn)
-        QWidget.setTabOrder(self.salle_info_btn, self.reserver_salle_date_edit)
-        QWidget.setTabOrder(self.reserver_salle_date_edit, self.reserver_salle_date_edit_2)
-        QWidget.setTabOrder(self.reserver_salle_date_edit_2, self.reserver_salle_btn)
-        QWidget.setTabOrder(self.reserver_salle_btn, self.invites_disponiblite_checkbox)
-        QWidget.setTabOrder(self.invites_disponiblite_checkbox, self.projection_evenement_btn)
-        QWidget.setTabOrder(self.projection_evenement_btn, self.prendre_charge_btn)
+        QWidget.setTabOrder(self.salle_info_btn, self.projection_evenement_btn)
 
         self.__retranslateUi()
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
-        self.reserver_salle_date_edit.dateTimeChanged.connect(self.reserver_salle_date_edit_2.setDateTime)
+
+        self.toolBox.setCurrentIndex(0)
+
 
         QMetaObject.connectSlotsByName(self)
     # setupUi
@@ -420,19 +416,26 @@ class Ui_info_event_dialog(QDialog):
     def __retranslateUi(self):
         self.setWindowTitle(QCoreApplication.translate("info_event_dialog", u"D\u00e9tails d'un \u00e9v\u00e8nement", None))
         self.titre.setText(QCoreApplication.translate("info_event_dialog", u"Cin\u00e9-Club", None))
-        self.reserver_salle_btn.setText(QCoreApplication.translate("info_event_dialog", u"R\u00e9server", None))
+        self.date_fin_evenement_value.setText(QCoreApplication.translate("info_event_dialog", u"TextLabel", None))
+        self.description_evenement_label.setText(QCoreApplication.translate("info_event_dialog", u"Description", None))
+        self.date_debut_evenement_value.setText(QCoreApplication.translate("info_event_dialog", u"TextLabel", None))
+        self.projection_evenement_btn.setText(QCoreApplication.translate("info_event_dialog", u"Cette \u00e9v\u00e8nement est une projection", None))
+        self.salle_label.setText(QCoreApplication.translate("info_event_dialog", u"Salle", None))
+        self.date_fin_label.setText(QCoreApplication.translate("info_event_dialog", u"Date de fin", None))
         self.date_debut_label.setText(QCoreApplication.translate("info_event_dialog", u"Date de d\u00e9but", None))
+        self.responsables_label.setText(QCoreApplication.translate("info_event_dialog", u"Reponsables", None))
+        self.event_color_label.setText(QCoreApplication.translate("info_event_dialog", u"Couleur", None))
+        self.nom_evenement_value.setText(QCoreApplication.translate("info_event_dialog", u"TextLabel", None))
         self.salle_label_value.setText(QCoreApplication.translate("info_event_dialog", u"TextLabel", None))
         self.salle_info_btn.setText(QCoreApplication.translate("info_event_dialog", u"Plus d'infos", None))
-        self.projection_evenement_btn.setText(QCoreApplication.translate("info_event_dialog", u"Cette \u00e9v\u00e8nement est une projection", None))
-        self.description_evenement_label.setText(QCoreApplication.translate("info_event_dialog", u"Description", None))
-        self.date_fin_label.setText(QCoreApplication.translate("info_event_dialog", u"Date de fin", None))
-        self.event_color_label.setText(QCoreApplication.translate("info_event_dialog", u"Couleur", None))
-        self.date_debut_evenement_value.setText(QCoreApplication.translate("info_event_dialog", u"TextLabel", None))
-        self.date_fin_evenement_value.setText(QCoreApplication.translate("info_event_dialog", u"TextLabel", None))
-        self.salle_label.setText(QCoreApplication.translate("info_event_dialog", u"Salle", None))
-        self.responsables_label.setText(QCoreApplication.translate("info_event_dialog", u"Reponsables", None))
-        self.invites_disponiblite_checkbox.setText(QCoreApplication.translate("info_event_dialog", u"Disponiblit\u00e9 des invit\u00e9s", None))
-        self.nom_evenement_value.setText(QCoreApplication.translate("info_event_dialog", u"TextLabel", None))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.info_page), QCoreApplication.translate("info_event_dialog", u"Les informations sur l'\u00e9v\u00e8nement", None))
+        self.reserver_salle_lable.setText(QCoreApplication.translate("info_event_dialog", u"R\u00e9servation de la salle", None))
+        self.reserver_salle_checkbox.setText(QCoreApplication.translate("info_event_dialog", u"R\u00e9server?", None))
+        self.invites_label.setText(QCoreApplication.translate("info_event_dialog", u"Les invit\u00e9s", None))
+        self.invites_disponbile_checkbox.setText(QCoreApplication.translate("info_event_dialog", u"Disponible?", None))
+        self.amuses_bouches_label.setText(QCoreApplication.translate("info_event_dialog", u"Amuses bouches", None))
+        self.amuses_bouches_checkbox.setText(QCoreApplication.translate("info_event_dialog", u"Disponible?", None))
+        self.gerer_evenement_label.setText(QCoreApplication.translate("info_event_dialog", u"G\u00e9rer l'\u00e9v\u00e8nement", None))
         self.prendre_charge_btn.setText(QCoreApplication.translate("info_event_dialog", u"Prendre en charge", None))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.dashboard_page), QCoreApplication.translate("info_event_dialog", u"Les boutons de contr\u00f4le de l'\u00e9v\u00e8nement", None))
     # retranslateUi
