@@ -26,6 +26,7 @@ class Ui_MainWindow(QMainWindow):
     
     @pyqtSlot()
     def __connecter(self):
+        self.error_text.clear()
         email = self.email_input.text()
         password = ""
         if self.pass_input.text() != "":
@@ -34,6 +35,7 @@ class Ui_MainWindow(QMainWindow):
             self.error_text.setText("Il faut saisir votre email adresse!")
         else:
             check_format = re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email)
+            # Check email format
             if check_format != None:
                 users = UtilisateurDAO.get_all()
                 for u in users:
@@ -41,17 +43,19 @@ class Ui_MainWindow(QMainWindow):
                         if u.admin:
                             # Check password
                             if u.password == password:
+                                self.email_input.clear()
+                                self.pass_input.clear()
                                 self.hide()
-                                window = Ui_AdminWindow(self)
-                                window.show()
+                                Ui_AdminWindow(self, admin=u).show()
                             else:
                                 self.error_text.setText("Le mot de passe est incorrect!")
                         else:
                             # Check password
                             if u.password == password:
+                                self.email_input.clear()
+                                self.pass_input.clear()
                                 self.hide()
-                                window = Ui_MemberWindow(parent=self, member=u)
-                                window.show()
+                                Ui_MemberWindow(parent=self, member=u).show()
                             else:
                                 self.error_text.setText("Le mot de passe est incorrect!")
                         break

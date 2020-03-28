@@ -18,16 +18,18 @@ class Utilisateur:
         self.__prenom = prenom
         self.__adresse = adresse
         self.__metier = Metier.MEMBRE_MAIRIE
-        if metier == "Metier.MEMBRE_CLUB":
+        if metier == "Metier.MEMBRE_CLUB" or metier == Metier.MEMBRE_CLUB:
             self.__metier = Metier.MEMBRE_CLUB
-        elif metier == "Metier.REPONSABLE_SALLE":
+        elif metier == "Metier.REPONSABLE_SALLE" or metier == Metier.REPONSABLE_SALLE:
             self.__metier = Metier.REPONSABLE_SALLE    
-        elif metier == "Metier.ARTISTE":
+        elif metier == "Metier.ARTISTE" or metier == Metier.ARTISTE:
             self.__metier = Metier.ARTISTE
-        elif metier == "Metier.CRITIQUE":
+        elif metier == "Metier.CRITIQUE" or metier == Metier.CRITIQUE:
             self.__metier = Metier.CRITIQUE
-        elif metier == "Metier.TECHNICIEN":
+        elif metier == "Metier.TECHNICIEN" or metier == Metier.TECHNICIEN:
             self.__metier = Metier.TECHNICIEN
+        elif metier == "Metier.AUTRE" or metier == Metier.AUTRE:
+            self.__metier = Metier.AUTRE
         self.__disponibilite = disponibilite
         self.__est_admin = est_admin
 

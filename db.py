@@ -16,14 +16,9 @@ class DBConnexion(object):
 
     @property
     def Instance(self):
-        self.__instance = sqlite3.connect(DB_NAME)
+        if self.__instance == None:
+            self.__instance = sqlite3.connect(DB_NAME)
         return self.__instance
-
-    def fermer_connection(self):
-        """ 
-        Fermer la connexion existante
-        """
-        self.__instance.close()
 
     def __create_tables(self):
         """
@@ -80,3 +75,4 @@ class DBConnexion(object):
                 `DEBAT_ID`	INTEGER NOT NULL,
                 FOREIGN KEY(`DEBAT_ID`) REFERENCES `DEBAT`(`ID`));"""
             self.__instance.execute(query)
+

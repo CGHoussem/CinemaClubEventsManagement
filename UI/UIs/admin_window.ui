@@ -44,7 +44,7 @@ QPushButton:hover#detailsEventBtn {
 	background-color: #138496;
 	border-color: #117a8b;
 }
-QLineEdit {
+QLineEdit, QPlainTextEdit {
 	color: #495057;
 	background-color: #fff;
 	border: 1px solid #ced4da;
@@ -123,7 +123,7 @@ QLineEdit {
         <item row="0" column="0">
          <widget class="QTabWidget" name="tabWidget">
           <property name="currentIndex">
-           <number>2</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="events_tab">
            <attribute name="title">
@@ -199,11 +199,275 @@ QLineEdit {
           </widget>
           <widget class="QWidget" name="staff_tab">
            <attribute name="title">
-            <string>Membres de la Mairie</string>
+            <string>Membres</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout">
             <item row="0" column="0">
-             <widget class="QTableWidget" name="tableWidget"/>
+             <widget class="QScrollArea" name="scrollArea">
+              <property name="widgetResizable">
+               <bool>true</bool>
+              </property>
+              <widget class="QWidget" name="scrollAreaWidgetContents">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>449</width>
+                 <height>499</height>
+                </rect>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout">
+                <item alignment="Qt::AlignTop">
+                 <widget class="QLabel" name="liste_membres_label">
+                  <property name="text">
+                   <string>Liste des users</string>
+                  </property>
+                  <property name="buddy">
+                   <cstring>members_tree</cstring>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QTreeWidget" name="members_tree">
+                  <property name="animated">
+                   <bool>true</bool>
+                  </property>
+                  <property name="headerHidden">
+                   <bool>false</bool>
+                  </property>
+                  <property name="columnCount">
+                   <number>2</number>
+                  </property>
+                  <attribute name="headerCascadingSectionResizes">
+                   <bool>false</bool>
+                  </attribute>
+                  <attribute name="headerMinimumSectionSize">
+                   <number>150</number>
+                  </attribute>
+                  <attribute name="headerDefaultSectionSize">
+                   <number>200</number>
+                  </attribute>
+                  <attribute name="headerShowSortIndicator" stdset="0">
+                   <bool>true</bool>
+                  </attribute>
+                  <column>
+                   <property name="text">
+                    <string notr="true">Utilisateur</string>
+                   </property>
+                  </column>
+                  <column>
+                   <property name="text">
+                    <string>Disponibilité</string>
+                   </property>
+                  </column>
+                  <item>
+                   <property name="text">
+                    <string>User 1</string>
+                   </property>
+                   <property name="text">
+                    <string>Dispo</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="add_user_groupbox">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>100</height>
+                   </size>
+                  </property>
+                  <property name="title">
+                   <string>Ajout d'un user</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_3">
+                   <item row="5" column="0" colspan="3" alignment="Qt::AlignRight">
+                    <widget class="QPushButton" name="add_user_btn">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="text">
+                      <string>Ajouter l'utilisateur</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="user_password_label">
+                     <property name="text">
+                      <string>Mot de passe</string>
+                     </property>
+                     <property name="buddy">
+                      <cstring>user_password_edit</cstring>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="2">
+                    <widget class="QPushButton" name="user_password_generate_btn">
+                     <property name="text">
+                      <string>Génerer</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QLineEdit" name="user_email_edit">
+                     <property name="placeholderText">
+                      <string>Entrez l'adresse email</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QLineEdit" name="user_password_edit">
+                     <property name="readOnly">
+                      <bool>true</bool>
+                     </property>
+                     <property name="placeholderText">
+                      <string>Générer un mot de passe</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QPlainTextEdit" name="user_adresse_edit">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>75</height>
+                      </size>
+                     </property>
+                     <property name="placeholderText">
+                      <string>Entrez l'adresse postale</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="user_email_label">
+                     <property name="text">
+                      <string>Adresse e-mail</string>
+                     </property>
+                     <property name="buddy">
+                      <cstring>user_email_edit</cstring>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="1">
+                    <widget class="QComboBox" name="user_metier_combox">
+                     <item>
+                      <property name="text">
+                       <string>Membre de la mairie</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Membre du club</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Artiste</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Critique</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Technicien</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Autre</string>
+                      </property>
+                     </item>
+                    </widget>
+                   </item>
+                   <item row="0" column="0" colspan="3">
+                    <layout class="QHBoxLayout" name="user_fname_lname_layout">
+                     <item>
+                      <widget class="QLabel" name="user_name_label">
+                       <property name="text">
+                        <string>Nom</string>
+                       </property>
+                       <property name="buddy">
+                        <cstring>user_name_edit</cstring>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLineEdit" name="user_name_edit">
+                       <property name="placeholderText">
+                        <string>Entrez le nom</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="user_fname_label">
+                       <property name="text">
+                        <string>Prénom</string>
+                       </property>
+                       <property name="buddy">
+                        <cstring>user_fname_edit</cstring>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLineEdit" name="user_fname_edit">
+                       <property name="placeholderText">
+                        <string>Entrez le prénom</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="1" column="0" alignment="Qt::AlignTop">
+                    <widget class="QLabel" name="user_adresse_label">
+                     <property name="text">
+                      <string>Adresse</string>
+                     </property>
+                     <property name="buddy">
+                      <cstring>user_adresse_edit</cstring>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="0">
+                    <widget class="QLabel" name="user_metier_label">
+                     <property name="text">
+                      <string>Métier</string>
+                     </property>
+                     <property name="buddy">
+                      <cstring>user_metier_combox</cstring>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -240,7 +504,16 @@ QLineEdit {
   <tabstop>filtre_date_edit</tabstop>
   <tabstop>filter_btn</tabstop>
   <tabstop>reset_filtre_btn</tabstop>
-  <tabstop>tableWidget</tabstop>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>members_tree</tabstop>
+  <tabstop>user_name_edit</tabstop>
+  <tabstop>user_fname_edit</tabstop>
+  <tabstop>user_adresse_edit</tabstop>
+  <tabstop>user_email_edit</tabstop>
+  <tabstop>user_password_edit</tabstop>
+  <tabstop>user_password_generate_btn</tabstop>
+  <tabstop>user_metier_combox</tabstop>
+  <tabstop>add_user_btn</tabstop>
  </tabstops>
  <resources/>
  <connections/>

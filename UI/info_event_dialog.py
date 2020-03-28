@@ -51,7 +51,7 @@ class Ui_info_event_dialog(QDialog):
         """
         Cette fonction permet de colorier la boutton de validation de l'évènement
         """
-        print(self.__reservation_salle, self.__disponibilite_invites, self.__amuses_bouches_debat)
+        #print(self.__reservation_salle, self.__disponibilite_invites, self.__amuses_bouches_debat)
         if self.__reservation_salle and self.__disponibilite_invites and self.__amuses_bouches_debat:
             self.prendre_charge_btn.setStyleSheet(open("UI/styles/success_button.css").read())
             self.prendre_charge_btn.setEnabled(True)

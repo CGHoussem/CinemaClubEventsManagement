@@ -156,12 +156,11 @@ class Ui_MemberWindow(QMainWindow):
     def __setupUi(self):
         if self.objectName():
             self.setObjectName(u"MemberWindow")
-        self.resize(432, 400)
+        self.resize(530, 570)
         self.setStyleSheet(open("UI/styles/base_style.css", "r").read())
         self.centralwidget = QWidget(self)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setAutoFillBackground(False)
-        self.centralwidget.setStyleSheet(u"")
         self.gridLayout_4 = QGridLayout(self.centralwidget)
         self.gridLayout_4.setObjectName(u"gridLayout_4")
         self.container = QVBoxLayout()

@@ -32,6 +32,9 @@ class Ui_info_user_dialog(QDialog):
                 else:
                     self.disponibilite_user_value.setStyleSheet("color: #FFCD42")
                 self.disponibilite_user_value.setText(str(self.__user.disponibilite))
+            else:
+                self.disponibilite_user_label.hide()
+                self.disponibilite_user_value.hide()
 
     def __setupUi(self):
         if self.objectName():

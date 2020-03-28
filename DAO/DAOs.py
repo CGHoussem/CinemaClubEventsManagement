@@ -32,6 +32,34 @@ def data_to_datetime(data):
 
 class DisponibiliteDAO:
     @staticmethod
+    def add_disponibilite(user_id, conn=None):
+        """
+        Cette fonction permet d'ajouter la disponbilité de l'utilsateur 'user_id'
+        
+            Parameters:
+                user_id: L'identifiant de l'utilisateur
+            Return:
+                Un booléen: ajout avec succée ou pas
+        """
+        close = False
+        try:
+            if conn == None:
+                conn = DBConnexion().Instance
+                close = True
+            cursor = conn.cursor()
+                
+            query = "INSERT INTO `USER_DISPONIBILITE` VALUES (?, 0, NULL, NULL, NULL)"
+            cursor.execute(query, [user_id])
+            
+            if close:
+                conn.commit()
+                conn.close()
+            return (True, None)
+        except sqlite3.Error as e:
+            print("add_disponibilite error:", e)
+            return (False, e)
+    
+    @staticmethod
     def get_by_user_id(user_id):
         """
         Cette fonction permet de renvoyer la disponbilité de l'utilsateur 'user_id'
@@ -50,12 +78,51 @@ class DisponibiliteDAO:
 
             dispo_data = cursor.fetchone()
             if dispo_data != None:
-                date_debut = QDateTime(QDateTime.currentDateTime())
-                dispo = Disponibilite(user_id, dispo_data[1], dispo_data[2], format_date(date_debut), data_to_datetime(dispo_data[4]))
+                dispo = Disponibilite(id_user=user_id, 
+                                      statut=int(dispo_data[1]), 
+                                      notes=dispo_data[2], 
+                                      date_debut=data_to_datetime(dispo_data[3]), 
+                                      date_fin=data_to_datetime(dispo_data[4]))
             conn.close()
         return dispo
 
 class UtilisateurDAO:
+   
+    @staticmethod
+    def add_user(user):
+        """
+        Cette fonction permet d'ajouter un utilisateur dans la base de donnée 
+        
+            Parameters:
+                user: L'utilisateur a ajouter
+        """
+        try:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+
+            print(user.metier)
+            return
+            # Ajouter l'utilisateur
+            query_add_event = "INSERT INTO `USER` VALUES (NULL, ?, ?, ?, ?, ?, ?, 1, 0)"
+            cursor.execute(query_add_event, (user.email, 
+                                             user.password, 
+                                             user.nom, 
+                                             user.prenom, 
+                                             user.adresse, 
+                                             str(user.metier)))
+            
+            if user.metier in [Metier.MEMBRE_CLUB, Metier.MEMBRE_MAIRIE]:
+                user_id = cursor.lastrowid
+                (r, ex) = DisponibiliteDAO.add_disponibilite(user_id, conn=conn)
+                if not r:
+                    raise(ex)
+
+            conn.commit()
+            conn.close()
+            return True
+        except sqlite3.Error as e:
+            print("add_user error:", str(e))
+        return False
    
     @staticmethod
     def get_all():
@@ -73,7 +140,7 @@ class UtilisateurDAO:
         
         rows = cursor.fetchall()
         for row in rows:
-            user_id = int(row[0]) 
+            user_id = int(row[0])
             dispo = DisponibiliteDAO.get_by_user_id(user_id)
             u = Utilisateur(user_id, row[1], row[2], row[3], row[4], row[5], row[6], dispo, int(row[8])==1)
             liste.append(u)
@@ -159,7 +226,7 @@ class DebatDAO:
 class ProjectionDAO:
     
     @staticmethod
-    def add_projection(projection, event_id, debat_id):
+    def add_projection(projection, event_id, debat_id, conn=None):
         """
         Cette fonction permet d'ajouter une projection dans la base de donnée 
         
@@ -168,8 +235,11 @@ class ProjectionDAO:
                 - event_id: L'identifiant de l'évenement
                 - debat_id: L'identifiant du debat
         """
+        close = False
         try:
-            conn = DBConnexion().Instance
+            if conn == None:
+                conn = DBConnexion().Instance
+                close = True
             cursor = conn.cursor()
             query_add_projection = "INSERT INTO `PROJECTION` VALUES (NULL, ?, ?, ?, ?, ?)"
             
@@ -182,8 +252,9 @@ class ProjectionDAO:
 
             cursor.execute(query_add_projection, (event_id, auteur, duree, projection.contexte, debat_id))
 
-            conn.commit()
-            conn.close()
+            if close:
+                conn.commit()
+                conn.close()
         except sqlite3.Error as e:
             print("Error:", str(e))
     
@@ -369,7 +440,7 @@ class EvenementDAO:
                     debat_id = cursor.lastrowid
                 
                 # Ajouter la projection
-                ProjectionDAO.add_projection(new_event, event_id, debat_id)
+                ProjectionDAO.add_projection(new_event, event_id, debat_id, conn=conn)
 
             conn.commit()
             conn.close()
