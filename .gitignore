@@ -2,3 +2,4 @@
 __pycache__
 UI/output.py
 UI/events_icons/
+*.psd

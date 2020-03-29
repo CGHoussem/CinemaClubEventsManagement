@@ -10,6 +10,7 @@ La liste des DAO:
 import sqlite3
 
 from db import DBConnexion
+
 from Models.disponibilite import Disponibilite
 from Models.utilisateur import Utilisateur, Metier
 from Models.evenement import Evenement, Etat
@@ -17,6 +18,8 @@ from Models.salle import Salle
 from Models.projection import Projection
 from Models.debat import Debat
 from Models.presentation import PresentationAuteur
+from Models.billet import Billet, Place
+from Models.billeterie import Billeterie
 
 from PyQt5.QtCore import QDate, QDateTime, QTime, QTimeZone
 
@@ -99,12 +102,9 @@ class UtilisateurDAO:
         try:
             conn = DBConnexion().Instance
             cursor = conn.cursor()
-
-            print(user.metier)
-            return
             # Ajouter l'utilisateur
-            query_add_event = "INSERT INTO `USER` VALUES (NULL, ?, ?, ?, ?, ?, ?, 1, 0)"
-            cursor.execute(query_add_event, (user.email, 
+            query = "INSERT INTO `USER` VALUES (NULL, ?, ?, ?, ?, ?, ?, 0)"
+            cursor.execute(query, (user.email, 
                                              user.password, 
                                              user.nom, 
                                              user.prenom, 
@@ -142,7 +142,7 @@ class UtilisateurDAO:
         for row in rows:
             user_id = int(row[0])
             dispo = DisponibiliteDAO.get_by_user_id(user_id)
-            u = Utilisateur(user_id, row[1], row[2], row[3], row[4], row[5], row[6], dispo, int(row[8])==1)
+            u = Utilisateur(user_id, row[1], row[2], row[3], row[4], row[5], row[6], dispo, int(row[7])==1)
             liste.append(u)
         
         conn.close()
@@ -167,7 +167,7 @@ class UtilisateurDAO:
             
             user_data = cursor.fetchone()
             dispo = DisponibiliteDAO.get_by_user_id(id)
-            user = Utilisateur(id, user_data[1], user_data[2], user_data[3], user_data[4], user_data[5], user_data[6], dispo, int(user_data[8])==1)
+            user = Utilisateur(id, user_data[1], user_data[2], user_data[3], user_data[4], user_data[5], user_data[6], dispo, int(user_data[7])==1)
             conn.close()
         return user
     
@@ -187,7 +187,8 @@ class UtilisateurDAO:
         
         rows = cursor.fetchall()
         for row in rows:
-            u = Utilisateur(int(row[0]), row[1], row[2], row[3], row[4], row[5], row[6], int(row[7]), True)
+            dispo = DisponibiliteDAO.get_by_user_id(int(row[0]))
+            u = Utilisateur(int(row[0]), row[1], row[2], row[3], row[4], row[5], row[6], dispo, True)
             liste.append(u)
         
         conn.close()
@@ -241,7 +242,7 @@ class ProjectionDAO:
                 conn = DBConnexion().Instance
                 close = True
             cursor = conn.cursor()
-            query_add_projection = "INSERT INTO `PROJECTION` VALUES (NULL, ?, ?, ?, ?, ?)"
+            query_add_projection = "INSERT INTO `PROJECTION` VALUES (NULL, ?, ?, ?, ?, ?, ?)"
             
             auteur = None
             duree = None
@@ -250,13 +251,19 @@ class ProjectionDAO:
             if projection.presentationAuteur != None:
                 duree = projection.presentationAuteur.duree
 
-            cursor.execute(query_add_projection, (event_id, auteur, duree, projection.contexte, debat_id))
+            amuses_bouches = 0
+            if debat_id == None:
+                amuses_bouches = 1
+
+            cursor.execute(query_add_projection, (event_id, auteur, duree, projection.contexte, debat_id, amuses_bouches))
 
             if close:
                 conn.commit()
                 conn.close()
+            return True
         except sqlite3.Error as e:
-            print("Error:", str(e))
+            print("add_projection error:", str(e))
+        return False
     
     @staticmethod
     def get_by_id(event_id, event_data, salle):
@@ -402,7 +409,7 @@ class EvenementDAO:
             cursor = conn.cursor()
 
             # Ajouter l'évènement
-            query_add_event = "INSERT INTO `EVENT` VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 0)"
+            query_add_event = "INSERT INTO `EVENT` VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0)"
             cursor.execute(query_add_event, (new_event.nom, 
                                              new_event.description, 
                                              format_date(new_event.date_debut), 
@@ -411,6 +418,11 @@ class EvenementDAO:
                                              new_event.color.name(), 
                                              int(new_event.est_projection)))
             event_id = cursor.lastrowid
+            
+            # Ajout de la billeterie
+            new_event.id = event_id
+            billeterie = Billeterie(new_event)
+            BilleterieDAO.add_billeterie(billeterie, conn)
             
             # Ajouter les responsables
             query_add_responsable = "INSERT INTO `EVENT_RESPONSABLE` VALUES (?, ?)"
@@ -444,8 +456,10 @@ class EvenementDAO:
 
             conn.commit()
             conn.close()
+            return True
         except sqlite3.Error as e:
             print("add_event Error:", str(e))
+        return False
 
     @staticmethod
     def update_state(event):
@@ -531,7 +545,7 @@ class SalleDAO:
         Cette fonction permet de renvoyer une liste de toutes les salles
         
             Return:
-                Une liste de Salle()
+                Une liste d'objets de type Salle()
         """
         liste = []
         conn = DBConnexion().Instance
@@ -543,7 +557,7 @@ class SalleDAO:
         for row in rows:
             responsable_id = int(row[2])
             responsable = UtilisateurDAO.get_by_id(responsable_id)
-            s = Salle(int(row[0]), row[1], responsable, int(row[3]))
+            s = Salle(int(row[0]), row[1], responsable, int(row[3]), int(row[4]))
             liste.append(s)
         
         conn.close()
@@ -569,7 +583,237 @@ class SalleDAO:
             salle_data = cursor.fetchone()
             responsable_id = int(salle_data[2])
             responsable = UtilisateurDAO.get_by_id(responsable_id)
-            salle = Salle(id, salle_data[1], responsable, int(salle_data[3]))
+            salle = Salle(id, salle_data[1], responsable, int(salle_data[3]), int(salle_data[4]))
             
             conn.close()
         return salle
+
+class BilletDAO:
+    @staticmethod
+    def add_billet(billet, billeterie):
+        """
+        Cette fonction permet d'ajouter un billet d'un évènement donnée
+        
+            Parameters:
+                billet: La billet a ajouté
+        """
+        try:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+
+            # Ajouter le la billeterie
+            query = "INSERT INTO `BILLET` VALUES (NULL, ?, ?, ?, ?, ?, ?)"
+            cursor.execute(query, (billet.event.id,
+                                   billet.place.num,
+                                   billet.place.type_place,
+                                   billet.nom, 
+                                   billet.prenom, 
+                                   billet.tel))
+
+            if billet.place.type_place == 1:
+                billeterie.nbr_place_standard_disponible -= 1
+            else:
+                billeterie.nbr_place_premium_disponible -= 1
+            BilleterieDAO.update_billeterie(billeterie, conn=conn)
+                
+            conn.commit()
+            conn.close()
+            return True
+        except sqlite3.Error as e:
+            print("add_billet error:", str(e))
+        return False
+    
+    @staticmethod
+    def reserver_billet(billet, billeterie):
+        """
+        Cette fonction permet d'ajouter un billet d'un évènement donnée
+        
+            Parameters:
+                billet: La billet a réservé
+        """
+        try:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+
+            # Ajouter le la billeterie
+            query = "INSERT INTO `BILLET` VALUES (NULL, ?, ?, ?, ?, ?, ?)"
+            cursor.execute(query, (billet.event.id,
+                                   billet.place.num,
+                                   billet.place.type_place,
+                                   billet.nom, 
+                                   billet.prenom, 
+                                   billet.tel))
+
+            billeterie.nbr_place_reservee += 1
+            if billet.place.type_place == 1:
+                billeterie.nbr_place_standard_disponible -= 1
+            else:
+                billeterie.nbr_place_premium_disponible -= 1
+            BilleterieDAO.update_billeterie(billeterie, conn=conn)
+
+            conn.commit()
+            conn.close()
+            return True
+        except sqlite3.Error as e:
+            print("reserver_billet error:", str(e))
+        return False
+    
+    @staticmethod
+    def get_by_event_id(event, conn=None):
+        """
+        Cette fonction permet de renvoyer les billets d'un évènement
+        
+            Parameters:
+                event: L'évènement
+            Return:
+                Une liste d'objets de type Billet()
+        """
+        billets = []
+        if event != None:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+            query = "SELECT * FROM `BILLET` WHERE `EVENT_ID` = ?"
+            cursor.execute(query, [event.id])
+            
+            billets_data = cursor.fetchall()
+            for billet_data in billets_data:
+                place = Place(int(billet_data[2]), int(billet_data[3]))
+                billet = Billet(billet_data[0], event, place, billet_data[4], billet_data[5], billet_data[6])
+                billets.append(billet)
+            
+            conn.close()
+        return billets
+
+    @staticmethod
+    def rembourser_billet(billet, billeterie):
+        """
+        Cette fonction permet de rembourser un billet
+        
+            Parameters:
+                billet: La billet a rembourser
+            Return:
+                un booléen: a été rembourser ou pas
+        """
+        try:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+
+            # Ajouter le la billeterie
+            query = "DELETE FROM `BILLET` WHERE ID=?"
+            cursor.execute(query, [billet.id])
+
+            if billet.place.type_place == 1:
+                billeterie.nbr_place_standard_disponible += 1
+            else:
+                billeterie.nbr_place_premium_disponible += 1
+            BilleterieDAO.update_billeterie(billeterie, conn=conn)
+                
+            conn.commit()
+            conn.close()
+            return True
+        except sqlite3.Error as e:
+            print("rembourser_billet error:", str(e))
+        return False
+
+class BilleterieDAO:
+    
+    @staticmethod
+    def add_billeterie(billeterie, conn=None):
+        """
+        Cette fonction permet d'ajouter la billeterie
+        
+            Paramaters:
+                billeterie: La billeterie
+        """
+        close = False
+        try:
+            if conn == None:
+                conn = DBConnexion().Instance
+                close = True
+            cursor = conn.cursor()
+
+            # Ajouter le la billeterie
+            query = "INSERT INTO `BILLETERIE` VALUES (?, ?, ?, ?, ?, ?)"
+            cursor.execute(query, (billeterie.event.id, 
+                                             billeterie.event.salle.nbr_place_standard, 
+                                             billeterie.event.salle.nbr_place_premium, 
+                                             billeterie.nbr_place_reservee, 
+                                             billeterie.prix_place_standard, 
+                                             billeterie.prix_place_premium))
+
+            if close:
+                conn.commit()
+                conn.close()
+            return True
+        except sqlite3.Error as e:
+            print("add_billeterie error:", str(e))
+        return False
+    
+    @staticmethod
+    def update_billeterie(billeterie, conn=None):
+        """
+        Cette fonction permet de MAJ une billeterie
+        
+            Paramaters:
+                billeterie: La billeterie donnée
+        """
+        close = False
+        try:
+            if conn == None:
+                conn = DBConnexion().Instance
+                close = True
+            cursor = conn.cursor()
+
+            # Ajouter le la billeterie
+            query = """UPDATE `BILLETERIE` SET 
+                `NBR_PLACE_STANDARD_DISPONIBLE`=?,
+                `NBR_PLACE_PREMIUM_DISPONIBLE`=?,
+                `NBR_PLACE_RESERVEE`=?,
+                `PRIX_PLACE_STANDARD`=?,
+                `PRIX_PLACE_PREMIUM`=? WHERE EVENT_ID = ?"""
+            
+            cursor.execute(query, (
+                billeterie.nbr_place_standard_disponible, 
+                billeterie.nbr_place_premium_disponible,
+                billeterie.nbr_place_reservee, 
+                billeterie.prix_place_standard, 
+                billeterie.prix_place_premium,
+                billeterie.event.id))
+
+            if close:
+                conn.commit()
+                conn.close()
+            return True
+        except sqlite3.Error as e:
+            print("update_billeterie error:", str(e))
+        return False
+    
+    @staticmethod
+    def get_by_event_id(event):
+        """
+        Cette fonction permet de renvoyer la billeterie d'un évènement
+        
+            Parameters:
+                event: L'évènement
+            Return:
+                Un objet de type Billeterie()
+        """
+        billeterie = None
+        if event != None:
+            conn = DBConnexion().Instance
+            cursor = conn.cursor()
+            query = "SELECT * FROM `BILLETERIE` WHERE `EVENT_ID` = ?"
+            cursor.execute(query, [event.id])
+            
+            billeterie_data = cursor.fetchone()
+            billets = BilletDAO.get_by_event_id(event, conn=conn)
+            billeterie = Billeterie(event=event, 
+                                    billets=billets,
+                                    nbr_place_standard_disponible=int(billeterie_data[1]),
+                                    nbr_place_premium_disponible=int(billeterie_data[2]),
+                                    nbr_place_reservee=int(billeterie_data[3]),
+                                    prix_place_standard=int(billeterie_data[4]),
+                                    prix_place_premium=int(billeterie_data[5]))
+            
+            conn.close()
+        return billeterie

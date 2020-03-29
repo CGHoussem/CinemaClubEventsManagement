@@ -55,9 +55,9 @@ class Scheduler(QCalendarWidget):
     def paintCell(self, painter, rect, date):
         super().paintCell(painter, rect, date)
         for event in self.__events:   
-            if date == event.date_debut.date():
+            if date >= event.date_debut.date() and date <= event.date_fin.date():
                 painter.setBrush(QColor(event.color))
-                painter.drawEllipse(rect.center(), 10, 10)
+                painter.drawRect(rect)
                 painter.drawText(rect, Qt.AlignCenter, str(date.day()))
 
 class Ui_AdminWindow(QMainWindow):
@@ -139,15 +139,16 @@ class Ui_AdminWindow(QMainWindow):
         
         if ret == 1:
             if dialog.potential_new_event != None:
-                EvenementDAO.add_event(dialog.potential_new_event)
-                self.__all_events.append(dialog.potential_new_event)
-                self.scheduler.update_events(self.__all_events)
-                self.scheduler.updateCells()
+                if EvenementDAO.add_event(dialog.potential_new_event):
+                    self.__afficher_all_evenements()
+                    self.scheduler.update_events(self.__all_events)
+                    self.scheduler.updateCells()
+                    QMessageBox.information(self, "Ajout d'un évènement", "L'évènement a été ajouté avec succée!")
+                else:
+                    QMessageBox.warning(self, "Ajout d'un évènement", "Erreur lors de l'ajout de l'évènement!")
             else:
                 # error (unknown error)
-                QMessageBox.critical(self, "Erreur!", "Error inconnue, veuillez réessayer!")
-        else:
-            print("L'ajout de l'évènement a été annuler!")
+                QMessageBox.critical(self, "Erreur!", "Erreur inconnue, veuillez réessayer!")
     
     @pyqtSlot()
     def __filter_events(self):
@@ -392,10 +393,10 @@ class Ui_AdminWindow(QMainWindow):
         self.events_tab.setObjectName(u"events_tab")
         self.gridLayout_2 = QGridLayout(self.events_tab)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.calendarWidget = Scheduler(self.events_tab, self.__all_events)
-        self.calendarWidget.setObjectName(u"calendarWidget")
+        self.scheduler = Scheduler(self.events_tab, self.__all_events)
+        self.scheduler.setObjectName(u"scheduler")
 
-        self.gridLayout_2.addWidget(self.calendarWidget, 0, 0, 1, 2)
+        self.gridLayout_2.addWidget(self.scheduler, 0, 0, 1, 2)
 
         self.eventsListWidget = QListWidget(self.events_tab)
         self.eventsListWidget.setObjectName(u"eventsListWidget")
@@ -618,8 +619,8 @@ class Ui_AdminWindow(QMainWindow):
         self.user_adresse_label.setBuddy(self.user_adresse_edit)
         self.user_metier_label.setBuddy(self.user_metier_combox)
         #endif // QT_CONFIG(shortcut)
-        QWidget.setTabOrder(self.tabWidget, self.calendarWidget)
-        QWidget.setTabOrder(self.calendarWidget, self.addEventBtn)
+        QWidget.setTabOrder(self.tabWidget, self.scheduler)
+        QWidget.setTabOrder(self.scheduler, self.addEventBtn)
         QWidget.setTabOrder(self.addEventBtn, self.eventsListWidget)
         QWidget.setTabOrder(self.eventsListWidget, self.filtre_date_edit)
         QWidget.setTabOrder(self.filtre_date_edit, self.filter_btn)

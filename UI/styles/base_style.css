@@ -33,6 +33,7 @@ QPushButton:hover#detailsEventBtn {
     border-color: #117a8b;
 }
 
+QTableWidget,
 QLineEdit,
 QPlainTextEdit,
 QTextEdit,

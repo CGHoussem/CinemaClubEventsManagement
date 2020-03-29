@@ -10,7 +10,7 @@ class Etat(Enum):
 
 class Evenement:
     def __init__(self, id, nom, description, date_debut, date_fin, salle, color, est_projection=False, etat=Etat.EN_ATTENTE, salle_reservee=False, disponibilite_invites=False):
-        self.__id = id
+        self.id = id
         self.nom = nom
         self.description = description
         self.date_debut = date_debut
@@ -22,11 +22,6 @@ class Evenement:
         self.etat = etat
         self.salle_reservee = salle_reservee
         self.disponibilite_invites = disponibilite_invites
-
-    @property
-    def id(self):
-        return self.__id
-
     def ajouterResponsable(self, membre):
         """
         Cette fonction permet d'ajouter un membre responsable de l'évèvenement

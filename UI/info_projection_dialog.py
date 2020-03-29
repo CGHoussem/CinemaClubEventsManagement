@@ -18,6 +18,11 @@ class Ui_info_projection_dialog(QDialog):
         self.est_debat_valider = False
         
         self.__setupUi()
+        self.auteur_presentation_edit.setEnabled(False)
+        self.duree_debat_edit.setEnabled(False)
+        self.animateur_debat_edit.setEnabled(False)
+        self.notes_debat_edit.setEnabled(False)
+      
         self.__inject()
         self.__connect_signals()
     
@@ -51,8 +56,8 @@ class Ui_info_projection_dialog(QDialog):
         """
         self.contexte_projection_value.setText(self.__projection.contexte)
         if self.__projection.presentationAuteur != None:
-            self.auteur_presentation_label.setText(self.__projection.presentationAuteur.auteur)
-            self.duree_presentation_label.setText(self.__projection.presentationAuteur.duree)
+            self.auteur_presentation_edit.setText(self.__projection.presentationAuteur.auteur)
+            self.duree_presentation_edit.setText(self.__projection.presentationAuteur.duree)
         else:
             self.presentation_auteur_group.hide()
         if self.__projection.debat != None:

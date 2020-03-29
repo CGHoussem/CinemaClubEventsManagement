@@ -25,7 +25,7 @@ class Ui_info_event_dialog(QDialog):
         if self.__evenement.est_projection:
             if self.__evenement.debat != None:
                 self.__amuses_bouches_debat = self.__evenement.amuses_bouches
-
+        print(self.__amuses_bouches_debat)
         self.__setupUi()
         self.__setup_signals()
         self.__check_and_design_validation_button()

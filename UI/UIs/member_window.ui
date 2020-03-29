@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>432</width>
-    <height>400</height>
+    <width>545</width>
+    <height>479</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,7 +44,7 @@ QPushButton:hover#detailsEventBtn {
 	background-color: #138496;
 	border-color: #117a8b;
 }
-QLineEdit {
+QLineEdit, QTableWidget{
 	color: #495057;
 	background-color: #fff;
 	border: 1px solid #ced4da;
@@ -154,80 +154,127 @@ QLineEdit {
        </widget>
       </item>
       <item>
-       <layout class="QGridLayout" name="form_grid" rowstretch="0,0,0,0" columnstretch="0,0">
-        <property name="leftMargin">
-         <number>5</number>
+       <widget class="QTabWidget" name="tabWidget">
+        <property name="currentIndex">
+         <number>1</number>
         </property>
-        <property name="topMargin">
-         <number>5</number>
-        </property>
-        <property name="rightMargin">
-         <number>5</number>
-        </property>
-        <property name="bottomMargin">
-         <number>5</number>
-        </property>
-        <item row="0" column="0">
-         <widget class="QLabel" name="nom_prenom_label">
-          <property name="text">
-           <string>Membre de la mairie / du club :</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="evenements_label">
-          <property name="text">
-           <string>Évènements associés :</string>
-          </property>
-          <property name="buddy">
-           <cstring>events_list_widget</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QWidget" name="widget" native="true">
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <item>
-            <widget class="QLabel" name="status_value">
-             <property name="text">
-              <string>Status</string>
-             </property>
-             <property name="buddy">
-              <cstring>pushButton</cstring>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButton">
-             <property name="text">
-              <string>Plus d'infos</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="status_label">
-          <property name="text">
-           <string>Status :</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLabel" name="nom_prenom_value">
-          <property name="text">
-           <string>Nom et Prénom</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0" colspan="2">
-         <widget class="QListWidget" name="events_list_widget"/>
-        </item>
-       </layout>
+        <widget class="QWidget" name="tab">
+         <attribute name="title">
+          <string>Générale</string>
+         </attribute>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="0">
+           <layout class="QGridLayout" name="form_grid" rowstretch="0,0,0,0" columnstretch="0,0">
+            <property name="leftMargin">
+             <number>5</number>
+            </property>
+            <property name="topMargin">
+             <number>5</number>
+            </property>
+            <property name="rightMargin">
+             <number>5</number>
+            </property>
+            <property name="bottomMargin">
+             <number>5</number>
+            </property>
+            <item row="1" column="0">
+             <widget class="QLabel" name="status_label">
+              <property name="text">
+               <string>Status :</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0" colspan="2">
+             <widget class="QListWidget" name="events_list_widget"/>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="nom_prenom_label">
+              <property name="text">
+               <string>Membre de la mairie / du club :</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="evenements_label">
+              <property name="text">
+               <string>Évènements associés :</string>
+              </property>
+              <property name="buddy">
+               <cstring>events_list_widget</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QWidget" name="widget" native="true">
+              <layout class="QHBoxLayout" name="horizontalLayout">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="status_value">
+                 <property name="text">
+                  <string>Status</string>
+                 </property>
+                 <property name="buddy">
+                  <cstring>pushButton</cstring>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pushButton">
+                 <property name="text">
+                  <string>Plus d'infos</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="nom_prenom_value">
+              <property name="text">
+               <string>Nom et Prénom</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="billeterieTab">
+         <attribute name="title">
+          <string>Billeterie</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QWidget" name="widget_2" native="true">
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QLineEdit" name="billeterie_event_name_edit"/>
+             </item>
+             <item>
+              <widget class="QPushButton" name="billeterie_filter_btn">
+               <property name="text">
+                <string>Filtrer</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QListWidget" name="billeterie_list_widget"/>
+          </item>
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QPushButton" name="billeterie_event_btn">
+            <property name="text">
+             <string>Plus de contrôle sur l'évènement</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
       </item>
      </layout>
     </item>
@@ -238,7 +285,7 @@ QLineEdit {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>432</width>
+     <width>545</width>
      <height>21</height>
     </rect>
    </property>

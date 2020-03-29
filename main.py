@@ -7,6 +7,7 @@ La boucle principale de l'application
     - Date: 2019-2020
 """
 
+
 from UI.main_window import Ui_MainWindow
 from PyQt5.QtWidgets import QApplication
 
